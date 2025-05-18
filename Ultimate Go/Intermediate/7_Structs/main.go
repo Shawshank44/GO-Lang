@@ -25,7 +25,7 @@ type PhoneNumber struct {
 }
 
 // Methods :
-func (p Person) Fullname() string {
+func (p Person) Fullname() string { // Value reciever
 	return p.firstName + " " + p.lastName
 }
 
