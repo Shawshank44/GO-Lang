@@ -8,7 +8,7 @@ import (
 
 type Person struct { // struct tags
 	FirstName string  `json:"first_name"`
-	Age       int     `json:"age,omitempty"` // or (-)
+	Age       int     `json:"age,omitempty"`
 	Email     string  `json:"email,omitempty"`
 	Address   Address `json:"address"`
 }
