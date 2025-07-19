@@ -53,6 +53,11 @@ func main() {
 	// 	close(ch)
 	// }()
 
+	/*
+		In Go, when receiving a value from a channel using the form value, ok := <-channel, the ok is a boolean that indicates whether the channel is open (true) or closed (false).
+		This helps the program know if a value was successfully received or if the channel is closed and no more values will be sent.
+	*/
+
 	// for {
 	// 	select {
 	// 	case msg, ok := <-ch:
