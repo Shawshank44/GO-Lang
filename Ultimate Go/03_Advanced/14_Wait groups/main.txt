@@ -1,0 +1,47 @@
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type NumberInfo struct {
+	Value  int
+	IsEven bool
+}
+
+func OddorEven(num int, handler chan<- NumberInfo) {
+	for i := 0; i < num; i++ {
+		info := NumberInfo{
+			Value:  i,
+			IsEven: i%2 == 0,
+		}
+		handler <- info
+	}
+	close(handler)
+}
+
+func main() {
+	handler := make(chan NumberInfo)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		OddorEven(10, handler)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for result := range handler {
+			if result.IsEven {
+				fmt.Printf("Even: %d\n", result.Value)
+			} else {
+				fmt.Printf("Odd: %d\n", result.Value)
+			}
+		}
+	}()
+
+	wg.Wait()
+}
