@@ -1,0 +1,56 @@
+A **race condition** in software development happens when the behavior of a program depends on the timing or sequence of uncontrollable events — usually when multiple threads, processes, or operations access **shared data or resources at the same time** without proper coordination.
+
+In simpler terms:
+
+> Two (or more) "runners" in your program are racing to read or modify the same data, and whoever reaches it first changes the outcome — often leading to bugs that are **hard to predict** and **hard to reproduce**.
+
+---
+
+### **Why It Happens**
+
+Race conditions usually occur when:
+
+1. **Shared state** exists (like a variable, file, or database entry).
+2. **Concurrent execution** happens (threads, processes, goroutines, async calls).
+3. **Lack of synchronization** — no locks, mutexes, atomic operations, etc.
+
+---
+
+### **Example**
+
+Imagine a bank account with a balance of ₹1,000.
+Two operations happen at the same time:
+
+* **Thread A**: Withdraw ₹600
+* **Thread B**: Withdraw ₹500
+
+Without synchronization:
+
+1. Both read the balance: ₹1,000.
+2. Thread A subtracts ₹600 → thinks balance will be ₹400.
+3. Thread B subtracts ₹500 → thinks balance will be ₹500.
+4. They both write back their results **without seeing the other's update**.
+
+**Possible wrong result:** Balance could become ₹400 or ₹500 instead of the correct ₹-100 (or a rejected transaction).
+
+---
+
+### **Real-world consequences**
+
+* **Incorrect data** (e.g., double booking seats).
+* **Security issues** (e.g., bypassing limits or approvals).
+* **System crashes** (inconsistent state).
+
+---
+
+### **How to Prevent Race Conditions**
+
+1. **Locks / Mutexes** – Only one thread can access a resource at a time.
+2. **Atomic operations** – Perform read-modify-write as a single uninterruptible step.
+3. **Transactions** – In databases, ensure operations are isolated.
+4. **Immutable data** – No changes once created, avoiding shared state problems.
+5. **Proper concurrent design** – Using message passing (e.g., channels in Go) instead of shared memory.
+
+---
+
+If you want, I can show you **a small before-and-after Go example** where a race condition is fixed using a mutex — since Go makes it easy to see this problem in action. Would you like me to show that?
