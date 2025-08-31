@@ -1,0 +1,51 @@
+case http.MethodPost:
+	// Parse form data (necessary if Content-Type is application/x-www-form-urlencoded)
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+
+	// Convert parsed form values into a map (only taking the first value for each key)
+	res := make(map[string]any)
+	for key, value := range r.Form {
+		res[key] = value[0]
+	}
+	fmt.Println("Parsed form data map:", res)
+
+	// Read raw request body (useful if request contains JSON, raw data, etc.)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal("Error reading body:", err)
+	}
+	defer r.Body.Close()
+	fmt.Println("Raw Body:", string(body))
+
+	// If JSON is expected in the body, unmarshal into struct
+	var user User
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		log.Fatal("Error unmarshalling JSON:", err)
+	}
+	fmt.Println("Decoded User struct:", user)
+
+	// Print request metadata and diagnostics
+	fmt.Println("----- Request Details -----")
+	fmt.Println("Body (after read):", r.Body)       // Already consumed by io.ReadAll
+	fmt.Println("Form:", r.Form)                     // Parsed form data
+	fmt.Println("Header:", r.Header)                 // Request headers
+	fmt.Println("Context:", r.Context())             // Request context
+	fmt.Println("Content-Length:", r.ContentLength)  // Length of body
+	fmt.Println("Host:", r.Host)                     // Request host
+	fmt.Println("Method:", r.Method)                 // HTTP method (POST)
+	fmt.Println("Protocol:", r.Proto)                // Protocol (e.g., HTTP/1.1)
+	fmt.Println("Remote-Address:", r.RemoteAddr)     // Client IP:Port
+	fmt.Println("Request URI:", r.RequestURI)        // Raw request URI
+	fmt.Println("TLS:", r.TLS)                       // TLS info (nil if HTTP)
+	fmt.Println("Trailer:", r.Trailer)               // Trailer headers (if any)
+	fmt.Println("Transfer Encoding:", r.TransferEncoding)
+	fmt.Println("URL:", r.URL)                       // Parsed URL object
+	fmt.Println("User-Agent:", r.UserAgent())        // Client user agent
+	fmt.Println("Port:", r.URL.Port())               // Explicit port in URL (if any)
+	fmt.Println("URL Scheme:", r.URL.Scheme)         // URL scheme (http/https)
+	fmt.Println("----------------------------")
