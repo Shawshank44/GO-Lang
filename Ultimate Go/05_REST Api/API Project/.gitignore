@@ -27,6 +27,12 @@ go.work.sum
 # env file
 .env
 
+# certificates
+cert.pem
+key.pem
+
+# configs
+openssl.cnf
 
 # Editor/IDE
 # .idea/

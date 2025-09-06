@@ -1,0 +1,41 @@
+func TeachersHandler(w http.ResponseWriter, r *http.Request) {
+	// teachers/{id} -> PathParams
+	// teachers/?key=value&query=value2&sortby=email&sortorder=ASC -> QueryParams
+	switch r.Method {
+	case http.MethodGet:
+		// PathParams :
+		// fmt.Println(r.URL.Path)
+		// path := strings.TrimPrefix(r.URL.Path, "/teachers/")
+		// userID := strings.TrimSuffix(path, "/")
+		// fmt.Println("The ID is : ", userID)
+
+		// QueryParams :
+		fmt.Println("Query Params", r.URL.Query())
+		queryParams := r.URL.Query()
+		sortby := queryParams.Get("sortby")
+		key := queryParams.Get("key")
+		sortOrder := queryParams.Get("sortorder")
+
+		if sortOrder == "" { //If Blank
+			sortOrder = "DESC"
+		}
+		fmt.Printf("Sortby : %v, SortOrder :%v, key : %v \n", sortby, sortOrder, key)
+
+		w.Write([]byte("Welcome to Teacher GET"))
+		return
+	case http.MethodPost:
+		w.Write([]byte("Welcome to Teacher POST"))
+		return
+	case http.MethodPut:
+		w.Write([]byte("Welcome to Teacher PUT"))
+		return
+	case http.MethodPatch:
+		w.Write([]byte("Welcome to Teacher PATCH"))
+		return
+	case http.MethodDelete:
+		w.Write([]byte("Welcome to Teacher DELETE"))
+		return
+	}
+
+	w.Write([]byte("Welcome to Teacher Page"))
+}
