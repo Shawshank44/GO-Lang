@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	mw "restapi/internal/api/middlewares"
 )
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +102,7 @@ func main() {
 	// Create custom server :
 	server := &http.Server{
 		Addr:      port,
-		Handler:   mux,
+		Handler:   mw.SecurityHeaders(mw.CORS(mux)),
 		TLSConfig: tlsConfig,
 	}
 
