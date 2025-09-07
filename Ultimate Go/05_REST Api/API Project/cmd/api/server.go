@@ -102,7 +102,7 @@ func main() {
 	// Create custom server :
 	server := &http.Server{
 		Addr:      port,
-		Handler:   mw.SecurityHeaders(mw.CORS(mux)),
+		Handler:   mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.CORS(mux))),
 		TLSConfig: tlsConfig,
 	}
 
