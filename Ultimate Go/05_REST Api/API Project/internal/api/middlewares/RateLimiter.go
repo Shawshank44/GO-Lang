@@ -34,7 +34,9 @@ func (rl *RateLimiter) resetVisitorCount() {
 }
 
 func (rl *RateLimiter) MiddleWare(next http.Handler) http.Handler {
+	fmt.Println("Ratelimiter Middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Ratelimiter Middleware being returned")
 		rl.mu.Lock()
 		defer rl.mu.Unlock()
 		visitorIP := r.RemoteAddr // you might want to extract the IP in a more sophisticated way
@@ -47,5 +49,6 @@ func (rl *RateLimiter) MiddleWare(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+		fmt.Println("Ratelimiter Middleware ends...")
 	})
 }

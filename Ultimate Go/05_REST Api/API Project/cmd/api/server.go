@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	mw "restapi/internal/api/middlewares"
-	"time"
 )
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,12 +99,22 @@ func main() {
 		MinVersion: tls.VersionTLS12,
 	}
 
-	rl := mw.NewRateLimiter(5, time.Minute)
+	// rl := mw.NewRateLimiter(5, time.Minute)
+	// hpp := mw.HPPOptions{
+	// 	CheckQuery:                  true,
+	// 	CheckBody:                   true,
+	// 	CheckBodyOnlyForContentType: "application/x-www-form-urlencoded",
+	// 	Whitelist:                   []string{"sortBy", "sortOrder", "name", "age", "class"},
+	// }
+
+	// securemux := mw.CORS(rl.MiddleWare(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.Compression(mw.HPP(hpp)(mux))))))
+	// securemux := ApplyMiddleWares(mux, mw.HPP(hpp), mw.Compression, mw.SecurityHeaders, mw.ResponseTimeMiddleware, rl.MiddleWare, mw.CORS)
+	securemux := mw.SecurityHeaders(mux)
 
 	// Create custom server :
 	server := &http.Server{
 		Addr:      port,
-		Handler:   rl.MiddleWare(mw.Compression(mw.ResponseTimeMiddleware(mw.SecurityHeaders(mw.CORS(mux))))),
+		Handler:   securemux,
 		TLSConfig: tlsConfig,
 	}
 
@@ -114,4 +123,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// Middleware is a function that wraps an http.Handler with additional functionality
+type MiddleWare func(http.Handler) http.Handler
+
+func ApplyMiddleWares(handler http.Handler, middlewares ...MiddleWare) http.Handler {
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+	return handler
 }
