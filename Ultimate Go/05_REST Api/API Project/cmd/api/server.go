@@ -9,20 +9,21 @@ import (
 	mw "restapi/internal/api/middlewares"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Teacher struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Class     string
-	Subject   string
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Class     string `json:"class"`
+	Subject   string `json:"subject"`
 }
 
 var (
 	teachers = make(map[int]Teacher)
-	// mutex    = &sync.Mutex{}
-	nextId = 1
+	mutex    = &sync.Mutex{}
+	nextId   = 1
 )
 
 func init() {
@@ -57,6 +58,7 @@ func init() {
 		Class:     "10C",
 		Subject:   "Science",
 	}
+	nextId++
 }
 
 func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +103,37 @@ func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(teacher)
 }
 
+func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	var NewTeachers []Teacher
+	err := json.NewDecoder(r.Body).Decode(&NewTeachers)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+
+	addedTeacher := make([]Teacher, len(NewTeachers))
+	for i, newTeacher := range NewTeachers {
+		newTeacher.ID = nextId
+		teachers[nextId] = newTeacher
+		addedTeacher[i] = newTeacher
+		nextId++
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	response := struct {
+		Status string    `json:"status"`
+		Count  int       `json:"count"`
+		Data   []Teacher `json:"data"`
+	}{
+		Status: "success",
+		Count:  len(addedTeacher),
+		Data:   addedTeacher,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprint(w, "Welcome to the home page") // 1 way
 	w.Write([]byte("Welcome to the home page"))
@@ -114,6 +147,7 @@ func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	case http.MethodPost:
 		w.Write([]byte("Welcome to Teacher POST"))
+		AddTeacherHandler(w, r)
 		return
 	case http.MethodPut:
 		w.Write([]byte("Welcome to Teacher PUT"))
