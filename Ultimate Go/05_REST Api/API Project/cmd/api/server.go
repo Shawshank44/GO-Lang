@@ -2,11 +2,104 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	mw "restapi/internal/api/middlewares"
+	"strconv"
+	"strings"
 )
+
+type Teacher struct {
+	ID        int
+	FirstName string
+	LastName  string
+	Class     string
+	Subject   string
+}
+
+var (
+	teachers = make(map[int]Teacher)
+	// mutex    = &sync.Mutex{}
+	nextId = 1
+)
+
+func init() {
+	teachers[nextId] = Teacher{
+		ID:        nextId,
+		FirstName: "John",
+		LastName:  "Doe",
+		Class:     "9A",
+		Subject:   "Math",
+	}
+	nextId++
+	teachers[nextId] = Teacher{
+		ID:        nextId,
+		FirstName: "Jane",
+		LastName:  "smith",
+		Class:     "10A",
+		Subject:   "Algebra",
+	}
+	nextId++
+	teachers[nextId] = Teacher{
+		ID:        nextId,
+		FirstName: "Jane",
+		LastName:  "Doe",
+		Class:     "10B",
+		Subject:   "Drawing",
+	}
+	nextId++
+	teachers[nextId] = Teacher{
+		ID:        nextId,
+		FirstName: "Antheny",
+		LastName:  "Missery",
+		Class:     "10C",
+		Subject:   "Science",
+	}
+}
+
+func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimPrefix(r.URL.Path, "/teachers/")
+	idstr := strings.TrimSuffix(path, "/")
+	fmt.Println(idstr)
+
+	if idstr == "" {
+		firstName := r.URL.Query().Get("first_name") // encoding/json package automatically converts your exported field names into JSON keys
+		lastName := r.URL.Query().Get("last_name")
+
+		TeacherList := make([]Teacher, 0, len(teachers))
+		for _, teacher := range teachers {
+			if (firstName == "" || teacher.FirstName == firstName) && (lastName == "" || teacher.LastName == lastName) {
+				TeacherList = append(TeacherList, teacher)
+			}
+		}
+		response := struct {
+			Status string    `json:"status"`
+			Count  int       `json:"count"`
+			Data   []Teacher `json:"data"`
+		}{
+			Status: "Success",
+			Count:  len(teachers),
+			Data:   TeacherList,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}
+
+	// Handle Path parameter :
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	teacher, exists := teachers[id]
+	if !exists {
+		http.Error(w, "Teacher not found", http.StatusNotFound)
+	}
+	json.NewEncoder(w).Encode(teacher)
+}
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprint(w, "Welcome to the home page") // 1 way
@@ -16,7 +109,8 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		w.Write([]byte("Welcome to Teacher GET"))
+		// Calling a get function
+		GetTeachersHandeler(w, r)
 		return
 	case http.MethodPost:
 		w.Write([]byte("Welcome to Teacher POST"))
