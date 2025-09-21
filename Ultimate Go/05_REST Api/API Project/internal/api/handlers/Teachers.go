@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"restapi/internal/models"
+	"restapi/internal/repository/sqlconnect"
 	"strconv"
 	"strings"
 	"sync"
@@ -118,22 +119,44 @@ func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	defer mutex.Unlock()
+	db, err := sqlconnect.ConnectDB()
+
+	if err != nil {
+		http.Error(w, "Error in connecting to Database", http.StatusInternalServerError)
+		return
+	}
+
+	defer db.Close()
+
 	var NewTeachers []models.Teacher
-	err := json.NewDecoder(r.Body).Decode(&NewTeachers)
+	err = json.NewDecoder(r.Body).Decode(&NewTeachers)
 	if err != nil {
 		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
 		return
 	}
 
-	addedTeacher := make([]models.Teacher, len(NewTeachers))
-	for i, newTeacher := range NewTeachers {
-		newTeacher.ID = nextId
-		teachers[nextId] = newTeacher
-		addedTeacher[i] = newTeacher
-		nextId++
+	stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?,?,?,?,?)")
+	if err != nil {
+		http.Error(w, "Error in Preparing SQL query", http.StatusInternalServerError)
 	}
+
+	defer stmt.Close()
+
+	addedTeachers := make([]models.Teacher, len(NewTeachers))
+	for i, Newteacher := range NewTeachers {
+		res, err := stmt.Exec(Newteacher.FirstName, Newteacher.LastName, Newteacher.Email, Newteacher.Class, Newteacher.Subject)
+		if err != nil {
+			http.Error(w, "error inserting data in database", http.StatusInternalServerError)
+			return
+		}
+		lastID, err := res.LastInsertId()
+		if err != nil {
+			http.Error(w, "Error getting last insert ID", http.StatusInternalServerError)
+		}
+		Newteacher.ID = int(lastID)
+		addedTeachers[i] = Newteacher
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	response := struct {
@@ -142,8 +165,8 @@ func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
 		Data   []models.Teacher `json:"data"`
 	}{
 		Status: "success",
-		Count:  len(addedTeacher),
-		Data:   addedTeacher,
+		Count:  len(addedTeachers),
+		Data:   addedTeachers,
 	}
 	json.NewEncoder(w).Encode(response)
 }
