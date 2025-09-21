@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,43 +15,7 @@ import (
 var (
 	teachers = make(map[int]models.Teacher)
 	mutex    = &sync.Mutex{}
-	nextId   = 1
 )
-
-func init() {
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "John",
-		LastName:  "Doe",
-		Class:     "9A",
-		Subject:   "Math",
-	}
-	nextId++
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Jane",
-		LastName:  "smith",
-		Class:     "10A",
-		Subject:   "Algebra",
-	}
-	nextId++
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Jane",
-		LastName:  "Doe",
-		Class:     "10B",
-		Subject:   "Drawing",
-	}
-	nextId++
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Antheny",
-		LastName:  "Missery",
-		Class:     "10C",
-		Subject:   "Science",
-	}
-	nextId++
-}
 
 func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -77,6 +42,14 @@ func TeachersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
+	db, err := sqlconnect.ConnectDB()
+
+	if err != nil {
+		http.Error(w, "Error in connecting to Database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
 	path := strings.TrimPrefix(r.URL.Path, "/teachers/")
 	idstr := strings.TrimSuffix(path, "/")
 	fmt.Println(idstr)
@@ -85,11 +58,36 @@ func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
 		firstName := r.URL.Query().Get("first_name") // encoding/json package automatically converts your exported field names into JSON keys
 		lastName := r.URL.Query().Get("last_name")
 
-		TeacherList := make([]models.Teacher, 0, len(teachers))
-		for _, teacher := range teachers {
-			if (firstName == "" || teacher.FirstName == firstName) && (lastName == "" || teacher.LastName == lastName) {
-				TeacherList = append(TeacherList, teacher)
+		query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1"
+
+		var args []interface{}
+
+		if firstName != "" {
+			query += " AND first_name = ?"
+			args = append(args, firstName)
+		}
+		if lastName != "" {
+			query += " AND last_name = ?"
+			args = append(args, lastName)
+		}
+
+		rows, err := db.Query(query, args...)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Database Query error", http.StatusInternalServerError)
+			return
+		}
+
+		defer rows.Close()
+
+		TeacherList := make([]models.Teacher, 0)
+		for rows.Next() {
+			var teacher models.Teacher
+			err = rows.Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+			if err != nil {
+				http.Error(w, "Error scanning database results", http.StatusInternalServerError)
 			}
+			TeacherList = append(TeacherList, teacher)
 		}
 		response := struct {
 			Status string           `json:"status"`
@@ -97,7 +95,7 @@ func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
 			Data   []models.Teacher `json:"data"`
 		}{
 			Status: "Success",
-			Count:  len(teachers),
+			Count:  len(TeacherList),
 			Data:   TeacherList,
 		}
 
@@ -111,10 +109,16 @@ func GetTeachersHandeler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	teacher, exists := teachers[id]
-	if !exists {
+	var teacher models.Teacher
+	err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+	if err == sql.ErrNoRows {
 		http.Error(w, "Teacher not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, "database query error", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(teacher)
 }
 
