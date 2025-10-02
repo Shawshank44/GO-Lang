@@ -453,3 +453,88 @@ func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 
 }
+
+func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sqlconnect.ConnectDB()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Error in connecting to Database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	var ids []int
+	err = json.NewDecoder(r.Body).Decode(&ids)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Error Starting a transaction", http.StatusInternalServerError)
+		return
+	}
+
+	stmt, err := tx.Prepare("DELETE FROM teachers WHERE id = ?")
+	if err != nil {
+		log.Println(err)
+		tx.Rollback()
+		http.Error(w, "Error preparing delete statement", http.StatusBadRequest)
+	}
+
+	defer stmt.Close()
+
+	deletedIds := []int{}
+
+	for _, id := range ids {
+		res, err := stmt.Exec(id)
+		if err != nil {
+			tx.Rollback()
+			log.Println(err)
+			http.Error(w, "error deleting a teacher", http.StatusInternalServerError)
+			return
+		}
+		rowsAffected, err := res.RowsAffected()
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "Error retrieving deleted result", http.StatusInternalServerError)
+			return
+		}
+
+		// if Teacher was deleted then add the ID to the deleted slice
+		if rowsAffected > 0 {
+			deletedIds = append(deletedIds, id)
+		}
+		if rowsAffected < 1 {
+			tx.Rollback()
+			http.Error(w, fmt.Sprintf("Id %d does not exists", id), http.StatusInternalServerError)
+		}
+	}
+
+	// Commit
+	err = tx.Commit()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Error committing transaction", http.StatusInternalServerError)
+		return
+	}
+
+	if len(deletedIds) < 1 {
+		http.Error(w, "IDs do not effect", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := struct {
+		Status    string `json:"status"`
+		DeletedID []int  `json:"deleted_id"`
+	}{
+		Status:    "Techer Successfully Deleted",
+		DeletedID: deletedIds,
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
