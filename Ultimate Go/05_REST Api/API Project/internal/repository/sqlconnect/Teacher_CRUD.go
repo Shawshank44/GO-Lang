@@ -131,7 +131,7 @@ func POSTTeacherDBHandler(NewTeachers []models.Teacher) ([]models.Teacher, error
 
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?,?,?,?,?)")
+	stmt, err := db.Prepare(GenerateInsertQuery(models.Teacher{}))
 	if err != nil {
 		return nil, utils.ErrorHandler(err, "Error Posting data")
 	}
@@ -140,7 +140,9 @@ func POSTTeacherDBHandler(NewTeachers []models.Teacher) ([]models.Teacher, error
 
 	addedTeachers := make([]models.Teacher, len(NewTeachers))
 	for i, Newteacher := range NewTeachers {
-		res, err := stmt.Exec(Newteacher.FirstName, Newteacher.LastName, Newteacher.Email, Newteacher.Class, Newteacher.Subject)
+		// res, err := stmt.Exec(Newteacher.FirstName, Newteacher.LastName, Newteacher.Email, Newteacher.Class, Newteacher.Subject)
+		values := GetStructValues(Newteacher)
+		res, err := stmt.Exec(values...)
 		if err != nil {
 			return nil, utils.ErrorHandler(err, "Error Posting data")
 		}
@@ -152,6 +154,40 @@ func POSTTeacherDBHandler(NewTeachers []models.Teacher) ([]models.Teacher, error
 		addedTeachers[i] = Newteacher
 	}
 	return addedTeachers, nil
+}
+
+func GenerateInsertQuery(model interface{}) string {
+	modelType := reflect.TypeOf(model)
+	var columns, placeholders string
+	for i := 0; i < modelType.NumField(); i++ {
+		dbTag := modelType.Field(i).Tag.Get("db")
+		fmt.Println("dbTag", dbTag)
+		dbTag = strings.TrimSuffix(dbTag, ",omitempty")
+		if dbTag != "" && dbTag != "id" { //skip the id field if its auto increment
+			if columns != "" {
+				columns += ", "
+				placeholders += ", "
+			}
+			columns += dbTag
+			placeholders += "?"
+		}
+	}
+	fmt.Printf("INSERT INTO teachers (%s) VALUES (%s) \n", columns, placeholders)
+	return fmt.Sprintf("INSERT INTO teachers (%s) VALUES (%s)", columns, placeholders)
+}
+
+func GetStructValues(model interface{}) []interface{} {
+	modelValue := reflect.ValueOf(model)
+	modelType := modelValue.Type()
+	values := []interface{}{}
+	for i := 0; i < modelType.NumField(); i++ {
+		dbTag := modelType.Field(i).Tag.Get("db")
+		if dbTag != "" && dbTag != "id,omitempty" {
+			values = append(values, modelValue.Field(i).Interface())
+		}
+	}
+	fmt.Println("Values from GetStructValues function", values)
+	return values
 }
 
 func PutTeacherDBHandler(id int, UpdatedTeacher models.Teacher) (models.Teacher, error) {
