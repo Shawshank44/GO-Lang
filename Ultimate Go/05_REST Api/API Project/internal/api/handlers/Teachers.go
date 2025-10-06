@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"restapi/internal/models"
 	"restapi/internal/repository/sqlconnect"
+	"restapi/pkg/utils"
 	"strconv"
 )
 
@@ -54,10 +56,51 @@ func GetTeacherHandeler(w http.ResponseWriter, r *http.Request) {
 // POST Teachers
 func AddTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	var NewTeachers []models.Teacher
-	err := json.NewDecoder(r.Body).Decode(&NewTeachers)
+	var RawTeachers []map[string]interface{}
+
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
 		return
+	}
+
+	defer r.Body.Close()
+
+	err = json.Unmarshal(body, &RawTeachers)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+
+	fields := utils.GetFieldNames(models.Teacher{})
+
+	allowedFields := make(map[string]struct{})
+	for _, field := range fields {
+		allowedFields[field] = struct{}{}
+	}
+
+	for _, teacher := range RawTeachers {
+		for key := range teacher {
+			_, ok := allowedFields[key]
+			if !ok {
+				http.Error(w, "Unacceptable fields found in request. Only use allowed fields", http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	err = json.Unmarshal(body, &NewTeachers)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+
+	for _, teacher := range NewTeachers {
+		err = utils.CheckBlankFields(teacher)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	addedTeachers, err := sqlconnect.POSTTeacherDBHandler(NewTeachers)
