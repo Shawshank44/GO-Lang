@@ -243,9 +243,54 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		Status    string `json:"status"`
 		DeletedID []int  `json:"deleted_id"`
 	}{
-		Status:    "Techer Successfully Deleted",
+		Status:    "Teacher Successfully Deleted",
 		DeletedID: deletedIds,
 	}
 
+	json.NewEncoder(w).Encode(response)
+}
+
+func GetStudentsByTeacherID(w http.ResponseWriter, r *http.Request) {
+	teacherID := r.PathValue("id")
+
+	var students []models.Student
+
+	students, err := sqlconnect.GetStudentsByTeacherIDFromDB(teacherID, students)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Status string `json:"status"`
+		Count  int    `json:"count"`
+		Data   []models.Student
+	}{
+		Status: "Success",
+		Count:  len(students),
+		Data:   students,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func GetStudentsCountByTeacherID(w http.ResponseWriter, r *http.Request) {
+	teacherID := r.PathValue("id")
+
+	count, err := sqlconnect.GetStudentsCountByTeacherIDFromDB(teacherID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	response := struct {
+		Status string `json:"status"`
+		Count  int    `json:"count"`
+	}{
+		Status: "Success",
+		Count:  count,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
