@@ -1,11 +1,7 @@
 package handlers
 
 import (
-	"crypto/subtle"
-	"database/sql"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,9 +10,7 @@ import (
 	"restapi/internal/repository/sqlconnect"
 	"restapi/pkg/utils"
 	"strconv"
-	"strings"
-
-	"golang.org/x/crypto/argon2"
+	"time"
 )
 
 // Get Execs
@@ -218,23 +212,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Search for user if user actually exists :
-	db, err := sqlconnect.ConnectDB()
+	user, err := sqlconnect.GetUserByUserName(req.Username)
 	if err != nil {
-		utils.ErrorHandler(err, "error connecting to database")
-		http.Error(w, "Error is connecting", http.StatusBadRequest)
-		return
-	}
-	defer db.Close()
-
-	user := &models.Exec{}
-	err = db.QueryRow("SELECT id, first_name, last_name, email, username, password, inactive_status, role FROM execs WHERE username = ?", req.Username).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Username, &user.Password, &user.InactiveStatus, &user.Role)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			utils.ErrorHandler(err, "user not found")
-			http.Error(w, "user not found.", http.StatusBadGateway)
-			return
-		}
-		http.Error(w, "database connectivity error.", http.StatusBadGateway)
+		http.Error(w, "Error fetching User", http.StatusBadRequest)
 		return
 	}
 
@@ -245,46 +225,60 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// verify password :
-	parts := strings.Split(user.Password, ".")
-	if len(parts) != 2 {
-		utils.ErrorHandler(errors.New("invalid encoded hash format"), "invalid encoded hash format")
-		http.Error(w, "invalid encoded hash format", http.StatusForbidden)
-		return
-	}
-	saltBase64 := parts[0]
-	hashedPasswordBase64 := parts[1]
-
-	salt, err := base64.StdEncoding.DecodeString(saltBase64)
+	err = utils.VerifyPassword(req.Password, user.Password)
 	if err != nil {
-		utils.ErrorHandler(err, "failed to decode the salt")
-		http.Error(w, "failed to decode the salt", http.StatusForbidden)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	hashedPassword, err := base64.StdEncoding.DecodeString(hashedPasswordBase64)
+	// Generate JWT Token :
+	tokenstring, err := utils.SignToken(user.ID, req.Username, user.Role)
 	if err != nil {
-		utils.ErrorHandler(err, "failed to decode the hash")
-		http.Error(w, "failed to decode the hash", http.StatusForbidden)
+		http.Error(w, "Could not create login token", http.StatusInternalServerError)
 		return
 	}
-
-	hash := argon2.IDKey([]byte(req.Password), salt, 1, 64*1024, 4, 32)
-
-	if len(hash) != len(hashedPassword) {
-		utils.ErrorHandler(errors.New("incorrect password"), "incorrect password")
-		http.Error(w, "Incorrect password", http.StatusForbidden)
-		return
-	}
-
-	if subtle.ConstantTimeCompare(hash, hashedPassword) == 1 {
-		//do nothing
-	} else {
-		utils.ErrorHandler(errors.New("incorrect password"), "incorrect password")
-		http.Error(w, "Incorrect password", http.StatusForbidden)
-		return
-	}
-
-	// Generate Token :
-
 	// Send token as a response or as a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    tokenstring,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:     "test",
+	// 	Value:    "testvalue",
+	// 	Path:     "/",
+	// 	HttpOnly: true,
+	// 	Secure:   true,
+	// 	Expires:  time.Now().Add(24 * time.Hour),
+	// 	SameSite: http.SameSiteStrictMode,
+	// })
+
+	w.Header().Set("Content-Type", "application/json")
+	response := struct {
+		Token string `json:"token"`
+	}{
+		Token: tokenstring,
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"message" : "User Logout Successsully"}`))
 }
