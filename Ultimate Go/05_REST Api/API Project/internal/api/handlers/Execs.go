@@ -282,3 +282,53 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"message" : "User Logout Successsully"}`))
 }
+
+func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	idstr := r.PathValue("id")
+	userid, err := strconv.Atoi(idstr)
+	if err != nil {
+		http.Error(w, "Invalid exec ID ", http.StatusBadRequest)
+		return
+	}
+
+	var req models.UpdatePasswordRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	if req.CurrentPassword == "" || req.NewPassword == "" {
+		http.Error(w, "fields cannot be blank", http.StatusBadRequest)
+		return
+	}
+
+	token, err := sqlconnect.UpdatePasswordInDB(userid, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		http.Error(w, "Error in updating the password", http.StatusBadRequest)
+		return
+	}
+
+	// Send token as a response or as a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	response := struct {
+		Message string
+		Token   string `json:"token"`
+	}{
+		Message: "Password updated successfully",
+		Token:   token,
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
