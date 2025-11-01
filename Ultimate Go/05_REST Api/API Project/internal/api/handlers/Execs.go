@@ -332,3 +332,28 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(response)
 }
+
+func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	if req.Email == "" {
+		http.Error(w, "email field cannot be blank!", http.StatusBadRequest)
+	}
+
+	err = sqlconnect.ForgotPasswordDBHandler(req.Email)
+	if err != nil {
+		return
+	}
+
+	// respond with a Success confirmation :
+	fmt.Fprintf(w, "Password sent link sent to %s", req.Email)
+
+}
