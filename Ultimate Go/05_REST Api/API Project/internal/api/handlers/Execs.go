@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -355,5 +357,46 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 	// respond with a Success confirmation :
 	fmt.Fprintf(w, "Password sent link sent to %s", req.Email)
+
+}
+
+func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.PathValue("resetcode")
+	type request struct {
+		NewPassword     string `json:"new_password"`
+		ConfirmPassword string `json:"confirm_password"`
+	}
+
+	var req request
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid values in request.", http.StatusBadRequest)
+		return
+	}
+
+	if req.NewPassword == "" || req.ConfirmPassword == "" {
+		http.Error(w, "Fields cannot be blank", http.StatusBadRequest)
+		return
+	} else if req.NewPassword != req.ConfirmPassword {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	bytes, err := hex.DecodeString(token)
+	if err != nil {
+		utils.ErrorHandler(err, "Internal error")
+		return
+	}
+
+	hashedtoken := sha256.Sum256(bytes)
+	HashedTokenString := hex.EncodeToString(hashedtoken[:])
+
+	err = sqlconnect.ResetPasswordDBHandler(HashedTokenString, req.NewPassword)
+	if err != nil {
+		http.Error(w, "Error in reset password", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Fprintln(w, "Password reset successfully")
 
 }

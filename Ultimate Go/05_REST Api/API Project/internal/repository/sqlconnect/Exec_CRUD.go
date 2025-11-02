@@ -338,12 +338,9 @@ func ForgotPasswordDBHandler(email string) error {
 	if err != nil {
 		return utils.ErrorHandler(err, "Failed to send password reset email")
 	}
-	log.Println("TokenBytes :", tokenBytes)
 	token := hex.EncodeToString(tokenBytes)
-	log.Println("Token :", token)
 
 	hashedToken := sha256.Sum256(tokenBytes)
-	log.Println("HashedToken :", hashedToken)
 
 	HashedTokenString := hex.EncodeToString(hashedToken[:])
 
@@ -367,6 +364,35 @@ func ForgotPasswordDBHandler(email string) error {
 	err = d.DialAndSend(m)
 	if err != nil {
 		return utils.ErrorHandler(err, "Failed to send password reset mail")
+	}
+	return nil
+}
+
+func ResetPasswordDBHandler(HashedTokenString, NewPassword string) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
+	}
+	defer db.Close()
+
+	var user models.Exec
+
+	query := `SELECT id, email FROM execs WHERE password_reset_token = ? AND password_token_expires > ?`
+	err = db.QueryRow(query, HashedTokenString, time.Now().Format(time.RFC3339)).Scan(&user.ID, &user.Email)
+	if err != nil {
+		return utils.ErrorHandler(err, "Invalid reset code or might have expired")
+	}
+
+	// Hash the password :
+	hashPassword, err := utils.HashPassword(NewPassword)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
+	}
+
+	UpdateQuery := `UPDATE execs SET password = ?, password_reset_token = NULL, password_token_expires = NULL, password_changed_at = ? WHERE id = ?`
+	_, err = db.Exec(UpdateQuery, hashPassword, time.Now().Format(time.RFC3339), user.ID)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
 	}
 	return nil
 }

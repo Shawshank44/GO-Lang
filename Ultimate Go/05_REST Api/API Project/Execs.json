@@ -1,6 +1,6 @@
 [
   {"first_name":"Alice","last_name":"Brown","email":"alice.brown@exec.school.com","username":"alice.brown","password":"Ab1!x9rT","role":"manager"},
-  {"first_name":"Benjamin","last_name":"Clark","email":"benjamin.clark@exec.school.com","username":"benjamin.clark","password":"dhjkmal@123","role":"admin"},
+  {"first_name":"Benjamin","last_name":"Clark","email":"benjamin.clark@exec.school.com","username":"benjamin.clark","password":"dhjkmal.benjamin","role":"admin"},
   {"first_name":"Chloe","last_name":"Davis","email":"chloe.davis@exec.school.com","username":"chloe.davis","password":"Cd3$k8Pw","role":"superuser"},
   {"first_name":"Daniel","last_name":"Evans","email":"daniel.evans@exec.school.com","username":"daniel.evans","password":"De4&n2Qs","role":"manager"},
   {"first_name":"Evelyn","last_name":"Garcia","email":"evelyn.garcia@exec.school.com","username":"evelyn.garcia","password":"Eg5*o7Rt","role":"admin"},
