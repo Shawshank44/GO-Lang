@@ -15,19 +15,28 @@ import (
 // Get Students
 func GetStudentsHandeler(w http.ResponseWriter, r *http.Request) {
 	var students []models.Student
-	students, err := sqlconnect.GetStudentsDBHandeler(students, r)
+	page, limit := utils.GetPaginationParams(r)
+
+	students, totalStudents, err := sqlconnect.GetStudentsDBHandeler(students, r, limit, page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	totalPages := (totalStudents + limit - 1) / limit
 	response := struct {
-		Status string           `json:"status"`
-		Count  int              `json:"count"`
-		Data   []models.Student `json:"data"`
+		Status     string           `json:"status"`
+		Count      int              `json:"count"`
+		TotalPages int              `json:"total_pages"`
+		PageNo     int              `json:"page_no"`
+		PageSize   int              `json:"page_limit"`
+		Data       []models.Student `json:"data"`
 	}{
-		Status: "Success",
-		Count:  len(students),
-		Data:   students,
+		Status:     "Success",
+		Count:      totalStudents,
+		TotalPages: totalPages,
+		PageNo:     page,
+		PageSize:   limit,
+		Data:       students,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
