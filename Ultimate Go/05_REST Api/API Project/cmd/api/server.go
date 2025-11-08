@@ -49,6 +49,7 @@ func main() {
 	jwtMiddlewares := mw.MiddlewaresExcludeParts(mw.JWTMiddlewares, "/execs/login", "/execs/forgotpassword", "/execs/resetpassword/reset")
 	securemux := jwtMiddlewares(mw.SecurityHeaders(router.MainRouter()))
 	// securemux := mw.SecurityHeaders(router.MainRouter())
+	// securemux := mw.XSSMiddleWares(router.MainRouter())
 
 	// Create custom server :
 	server := &http.Server{
