@@ -2,39 +2,80 @@ package main
 
 import (
 	"crypto/tls"
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	mw "restapi/internal/api/middlewares"
 	"restapi/internal/api/router"
-	"restapi/internal/repository/sqlconnect"
 	"restapi/pkg/utils"
 	"time"
 
 	"github.com/joho/godotenv"
 )
 
+//go:embed .env
+var envFile embed.FS
+
+func loadEnvFromEmbededFile() {
+	// Read the embeded .env file
+	content, err := envFile.ReadFile(".env")
+	if err != nil {
+		log.Fatalf("Error reading the .env file : %v", err)
+		return
+	}
+
+	// Creating a temp file to load the env variables
+	tempfile, err := os.CreateTemp("", ".env")
+	if err != nil {
+		log.Fatalf("Error creating the temporary .env file : %v", err)
+		return
+	}
+	defer os.Remove(tempfile.Name())
+
+	// Write the env variables in the temp .env file
+	_, err = tempfile.Write(content)
+	if err != nil {
+		log.Fatalf("Error writing the temporary .env file : %v", err)
+		return
+	}
+
+	err = tempfile.Close()
+	if err != nil {
+		log.Fatalf("Error closing the temporary .env file : %v", err)
+		return
+	}
+
+	// Load env vars from the temp file
+	err = godotenv.Load(tempfile.Name())
+	if err != nil {
+		log.Fatalf("Error loading the temporary .env file : %v", err)
+		return
+	}
+}
+
 func main() {
+	//  Only in Development, for running the source code
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	return
+	// }
 
-	err := godotenv.Load()
-	if err != nil {
-		return
-	}
-
-	_, err = sqlconnect.ConnectDB()
-	if err != nil {
-		utils.ErrorHandler(err, "")
-		return
-	}
+	// load environment variables from the embedded .env
+	loadEnvFromEmbededFile()
+	fmt.Println("ENvironment variable CERT_FILE : ", os.Getenv("CERT_FILE"))
 
 	port := os.Getenv("API_PORT")
 
-	cert := "cert.pem"
-	key := "key.pem"
+	// cert := "cert.pem"
+	// key := "key.pem"
+
+	cert := os.Getenv("CERT_FILE")
+	key := os.Getenv("KEY_FILE")
 
 	tlsConfig := &tls.Config{
-		MinVersion: tls.VersionTLS12,
+		MinVersion: tls.VersionTLS10,
 	}
 
 	rl := mw.NewRateLimiter(5, time.Minute)
@@ -61,7 +102,7 @@ func main() {
 	}
 
 	fmt.Println("Server is running on port ", port)
-	err = server.ListenAndServeTLS(cert, key)
+	err := server.ListenAndServeTLS(cert, key)
 	if err != nil {
 		log.Fatal(err)
 	}
