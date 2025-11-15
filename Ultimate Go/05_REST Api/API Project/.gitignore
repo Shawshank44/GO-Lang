@@ -2,8 +2,8 @@
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
 # Binaries for programs and plugins
-*.exe
-*.exe~
+# *.exe
+# *.exe~
 *.dll
 *.so
 *.dylib
@@ -25,14 +25,14 @@ go.work
 go.work.sum
 
 # env file
-.env
+# .env
 
 # certificates
-cert.pem
-key.pem
+# cert.pem
+# key.pem
 
 # configs
-openssl.cnf
+# openssl.cnf
 
 # Editor/IDE
 # .idea/
