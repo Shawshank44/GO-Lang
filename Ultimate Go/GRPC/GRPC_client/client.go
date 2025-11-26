@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"log"
-	mainapipb "simplegrpcclient/Proto/gen"
+	mainapipb "simplegrpcclient/proto/gen"
+	farewellpb "simplegrpcclient/proto/gen/farewell"
 	"time"
 
 	"google.golang.org/grpc"
@@ -29,6 +30,12 @@ func main() {
 	defer connec.Close()
 
 	client := mainapipb.NewCalculateClient(connec)
+
+	client1 := mainapipb.NewGreeterClient(connec)
+	bfclient := mainapipb.NewBidFarewellClient(connec)
+
+	// fwclient := farewellpb.NewAufwiedersehenClient(connec)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	req := mainapipb.AddRequest{
@@ -41,8 +48,44 @@ func main() {
 		return
 	}
 
+	reqGreet := &mainapipb.HelloRequest{
+		Name: "john",
+	}
+
+	res1, err := client1.Greet(ctx, reqGreet)
+	if err != nil {
+		log.Fatal("Could not greet", err)
+		return
+	}
+
+	res2, err := client1.Add(ctx, reqGreet)
+	if err != nil {
+		log.Fatal("Could not add-----", err)
+		return
+	}
+
+	reqGoodBye := &farewellpb.GoodByeRequest{
+		Name: "jane",
+	}
+
+	// resfw, err := fwclient.BidGoodBye(ctx, reqGoodBye)
+	// if err != nil {
+	// 	log.Fatal("Could not farewell", err)
+	// 	return
+	// }
+
+	resbf, err := bfclient.BidGoodBye(ctx, reqGoodBye)
+	if err != nil {
+		log.Fatal("Could not farewell", err)
+		return
+	}
+
 	log.Println("Sum :", res.Sum)
-	state := connec.GetState()
-	log.Println("connection state : ", state)
+	log.Println("Greet :", res1.Message)
+	log.Println("Greet from Add :", res2.Message)
+	log.Println("farewell :", resbf.Message)
+	// log.Println("Farewell : ", resfw.Message)
+	// state := connec.GetState()
+	// log.Println("connection state : ", state)
 
 }

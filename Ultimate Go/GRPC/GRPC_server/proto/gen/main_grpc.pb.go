@@ -8,7 +8,7 @@ package mainapipb
 
 import (
 	context "context"
-	farewell "simplegrpcclient/proto/gen/farewell"
+	farewell "simplegrpcserve/proto/gen/farewell"
 
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
