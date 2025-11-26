@@ -1,0 +1,214 @@
+Here’s the blunt truth: most developers screw up protobufs because they skip structure and jump straight to “compile and pray.”
+You want an end-to-end checklist? Here’s the one that prevents 99% of mistakes. Follow this and you won’t ship broken proto files or generate garbage Go code.
+
+---
+
+# ✅ **PROTOBUF END-TO-END CHECKLIST (For Your Exact File)**
+
+## **1️⃣ File & Syntax Sanity**
+
+* [ ] Confirm `syntax = "proto3";` (you already did).
+* [ ] Ensure package name is versioned: **example.v1** → good.
+* [ ] Ensure file name matches the domain: `user.proto` (not mandatory but clean).
+
+## **2️⃣ Go Package Setup (Most Devs Mess This Up)**
+
+* [ ] `option go_package` must include:
+
+  * Module path → **github.com/you/project**
+  * Directory → **proto/example/v1**
+  * Final Go package name → **examplev1**
+* [ ] Validate `go mod tidy` detects this module successfully.
+* [ ] Make sure folder structure actually exists:
+
+  ```
+  project/
+    proto/
+      example/
+        v1/
+          user.proto
+  ```
+
+## **3️⃣ Imports**
+
+* [ ] `google/protobuf/timestamp.proto` exists → usually inside your system’s protobuf include path.
+* [ ] Install/update google protos:
+
+  ```
+  go get google.golang.org/protobuf
+  ```
+
+## **4️⃣ Message Definitions**
+
+### General Rules
+
+* [ ] Field numbers are correct and **never reused** after deletion.
+* [ ] Optional fields not needed in proto3 → fine.
+* [ ] No snake_case field names missed (proto standard).
+
+### For Your `User` Message
+
+* [ ] `int64 id = 1;` → Good for primary keys.
+* [ ] `google.protobuf.Timestamp created_at = 4;` → Correct.
+* [ ] `repeated string tags = 5;` → OK.
+* [ ] `map<string, int32> scores = 6;` → OK.
+* [ ] `oneof contact { phone = 7; mobile = 8; }` → Confirm business logic ensures only one will be set.
+
+## **5️⃣ Enum Checklist**
+
+* [ ] First value is zero → **STATUS_UNSPECIFIED = 0** → correct.
+* [ ] Names are PascalCase → correct.
+* [ ] No renamed enum values after release.
+
+## **6️⃣ Request/Response Shapes**
+
+* [ ] `GetUserRequest` contains only what the server needs.
+* [ ] `GetUserResponse` wraps:
+
+  * User → object
+  * Status → enum (representing retrieval status or user state)
+
+## **7️⃣ Service Definition**
+
+* [ ] Service name is domain-specific: **UserService** → good.
+* [ ] Method signature:
+
+  ```
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  ```
+
+  → proper unary gRPC.
+
+## **8️⃣ Protogen Tools Installed (Don’t Skip This)**
+
+Run these and confirm versions:
+
+```
+protoc --version
+```
+
+You MUST have:
+
+```
+google.golang.org/protobuf/cmd/protoc-gen-go
+google.golang.org/grpc/cmd/protoc-gen-go-grpc
+```
+
+Install/update:
+
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+## **9️⃣ Code Generation Command (Most People Screw This Up)**
+
+From project root:
+
+```
+protoc \
+  --proto_path=. \
+  --go_out=. \
+  --go-grpc_out=. \
+  proto/example/v1/user.proto
+```
+
+Checklist:
+
+* [ ] `--proto_path` points to root.
+* [ ] Output directories exist.
+* [ ] Code appears under:
+
+  ```
+  proto/example/v1/*.pb.go
+  ```
+
+## **🔟 Validate Generated Code**
+
+* [ ] Confirm the Go package name in generated files = **examplev1**
+* [ ] Confirm generated structs appear:
+
+  * `type User struct {}`
+  * `type GetUserRequest struct {}`
+  * `type GetUserResponse struct {}`
+  * `type UserServiceClient interface { ... }`
+* [ ] Confirm oneof wrapper types exist:
+
+  * `*User_Phone`
+  * `*User_Mobile`
+
+## **1️⃣1️⃣ Implement the gRPC Server**
+
+Skeleton you MUST have:
+
+```go
+type userServer struct {
+    examplev1.UnimplementedUserServiceServer
+}
+
+func (s *userServer) GetUser(ctx context.Context, req *examplev1.GetUserRequest) (*examplev1.GetUserResponse, error) {
+    return &examplev1.GetUserResponse{
+        User: &examplev1.User{
+            Id:    req.UserId,
+            Name:  "Example",
+            Email: "ex@example.com",
+        },
+        Status: examplev1.Status_ACTIVE,
+    }, nil
+}
+```
+
+Checklist:
+
+* [ ] Struct embeds `UnimplementedUserServiceServer`.
+* [ ] Request & response types match generated definitions.
+* [ ] Timestamp generated with `timestamppb.New(time.Now())`.
+
+## **1️⃣2️⃣ Register & Run Server**
+
+```
+grpcServer := grpc.NewServer()
+examplev1.RegisterUserServiceServer(grpcServer, &userServer{})
+```
+
+Checklist:
+
+* [ ] Register the service
+* [ ] Start listening on a port
+* [ ] TLS optional but recommended
+
+## **1️⃣3️⃣ Client Call Test**
+
+Use a Go client or evans / grpcurl.
+
+Example:
+
+```
+grpcurl -plaintext localhost:50051 example.v1.UserService.GetUser \
+   -d '{"user_id": 1}'
+```
+
+Checklist:
+
+* [ ] Response includes user object
+* [ ] Enum correctly returned
+* [ ] oneof field is empty (expected unless you set it)
+
+## **1️⃣4️⃣ Backward Compatibility Check**
+
+Before releasing v1:
+
+* [ ] No renaming / reordering fields
+* [ ] No deleting fields
+* [ ] No changing field types
+* [ ] If removing, mark as deprecated instead
+
+---
+
+# Want me to generate:
+
+✅ A real folder structure
+✅ A Makefile for protogen
+✅ A ready-to-run server/client implementation
+Just tell me.

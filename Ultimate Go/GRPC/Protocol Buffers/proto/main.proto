@@ -1,28 +1,52 @@
 syntax = "proto3";
 
-package main;
+package example.v1;
 
-option go_package = "/proto;mainwithservicepb";
+// Go import path and package name for generated Go files.
+// Format: "<module path>/<dir>;packageName"
+option go_package = "github.com/you/project/proto/example/v1;examplev1";
 
-service Greeter {
-    rpc SayHello (HelloRequest) returns (HelloResponse);
+import "google/protobuf/timestamp.proto";
+
+// A user profile message
+message User {
+  // Field numbers are stable identifiers (do NOT change).
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  google.protobuf.Timestamp created_at = 4;
+
+  // Repeated: becomes []string in Go.
+  repeated string tags = 5;
+
+  // Map: becomes map[string]int32 in Go.
+  map<string, int32> scores = 6;
+
+  // oneof: only one of these will be set.
+  oneof contact {
+    string phone = 7;
+    string mobile = 8;
+  }
 }
 
-message HelloRequest {
-    string name = 1;
-    int64 age = 2;
+// Enum example
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
 }
 
-message HelloResponse {
-    string conf_message = 1;
-    repeated string data = 2;
+// Request / Response for a service method
+message GetUserRequest {
+  int64 user_id = 1;
 }
 
-message Address {
-    string address = 1;
+message GetUserResponse {
+  User user = 1;
+  Status status = 2;
 }
 
-message UserProfile {
-    string username = 1;
-    string email = 2;
+// gRPC service
+service UserService {
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
 }
