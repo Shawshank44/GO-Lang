@@ -7,11 +7,20 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
-	connec, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cert := "cert.pem"
+	// key := "key.pem"
+
+	creds, err := credentials.NewClientTLSFromFile(cert, "")
+	if err != nil {
+		log.Fatal("Failed in loading the credentials")
+		return
+	}
+
+	connec, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalln("Did not connect : ", err)
 		return
@@ -33,5 +42,7 @@ func main() {
 	}
 
 	log.Println("Sum :", res.Sum)
+	state := connec.GetState()
+	log.Println("connection state : ", state)
 
 }
