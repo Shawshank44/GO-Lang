@@ -153,28 +153,28 @@ func (x *NumberResponse) GetSum() int32 {
 	return 0
 }
 
-type AddRequest struct {
+type CalculateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	A             int32                  `protobuf:"varint,1,opt,name=a,proto3" json:"a,omitempty"`
-	B             int32                  `protobuf:"varint,2,opt,name=b,proto3" json:"b,omitempty"`
+	Numbers       []int32                `protobuf:"varint,1,rep,packed,name=numbers,proto3" json:"numbers,omitempty"`
+	CalculateFlag string                 `protobuf:"bytes,2,opt,name=calculate_flag,json=calculateFlag,proto3" json:"calculate_flag,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AddRequest) Reset() {
-	*x = AddRequest{}
+func (x *CalculateRequest) Reset() {
+	*x = CalculateRequest{}
 	mi := &file_proto_main_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AddRequest) String() string {
+func (x *CalculateRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AddRequest) ProtoMessage() {}
+func (*CalculateRequest) ProtoMessage() {}
 
-func (x *AddRequest) ProtoReflect() protoreflect.Message {
+func (x *CalculateRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_main_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -186,46 +186,46 @@ func (x *AddRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AddRequest.ProtoReflect.Descriptor instead.
-func (*AddRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CalculateRequest.ProtoReflect.Descriptor instead.
+func (*CalculateRequest) Descriptor() ([]byte, []int) {
 	return file_proto_main_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *AddRequest) GetA() int32 {
+func (x *CalculateRequest) GetNumbers() []int32 {
 	if x != nil {
-		return x.A
+		return x.Numbers
 	}
-	return 0
+	return nil
 }
 
-func (x *AddRequest) GetB() int32 {
+func (x *CalculateRequest) GetCalculateFlag() string {
 	if x != nil {
-		return x.B
+		return x.CalculateFlag
 	}
-	return 0
+	return ""
 }
 
-type AddResponse struct {
+type CalculateResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Sum           int32                  `protobuf:"varint,1,opt,name=sum,proto3" json:"sum,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AddResponse) Reset() {
-	*x = AddResponse{}
+func (x *CalculateResponse) Reset() {
+	*x = CalculateResponse{}
 	mi := &file_proto_main_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AddResponse) String() string {
+func (x *CalculateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AddResponse) ProtoMessage() {}
+func (*CalculateResponse) ProtoMessage() {}
 
-func (x *AddResponse) ProtoReflect() protoreflect.Message {
+func (x *CalculateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_main_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -237,12 +237,12 @@ func (x *AddResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AddResponse.ProtoReflect.Descriptor instead.
-func (*AddResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use CalculateResponse.ProtoReflect.Descriptor instead.
+func (*CalculateResponse) Descriptor() ([]byte, []int) {
 	return file_proto_main_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *AddResponse) GetSum() int32 {
+func (x *CalculateResponse) GetSum() int32 {
 	if x != nil {
 		return x.Sum
 	}
@@ -348,20 +348,19 @@ const file_proto_main_proto_rawDesc = "" +
 	"\rNumberRequest\x12\x16\n" +
 	"\x06number\x18\x01 \x01(\x05R\x06number\"\"\n" +
 	"\x0eNumberResponse\x12\x10\n" +
-	"\x03sum\x18\x01 \x01(\x05R\x03sum\"(\n" +
-	"\n" +
-	"AddRequest\x12\f\n" +
-	"\x01a\x18\x01 \x01(\x05R\x01a\x12\f\n" +
-	"\x01b\x18\x02 \x01(\x05R\x01b\"\x1f\n" +
-	"\vAddResponse\x12\x10\n" +
+	"\x03sum\x18\x01 \x01(\x05R\x03sum\"S\n" +
+	"\x10CalculateRequest\x12\x18\n" +
+	"\anumbers\x18\x01 \x03(\x05R\anumbers\x12%\n" +
+	"\x0ecalculate_flag\x18\x02 \x01(\tR\rcalculateFlag\"%\n" +
+	"\x11CalculateResponse\x12\x10\n" +
 	"\x03sum\x18\x01 \x01(\x05R\x03sum\" \n" +
 	"\x10FibonacciRequest\x12\f\n" +
 	"\x01n\x18\x01 \x01(\x05R\x01n\"+\n" +
 	"\x11FibonacciResponse\x12\x16\n" +
-	"\x06number\x18\x01 \x01(\x05R\x06number2\x9e\x02\n" +
+	"\x06number\x18\x01 \x01(\x05R\x06number2\xaa\x02\n" +
 	"\n" +
-	"Calculator\x126\n" +
-	"\x03Add\x12\x16.calculator.AddRequest\x1a\x17.calculator.AddResponse\x12R\n" +
+	"Calculator\x12B\n" +
+	"\x03Sum\x12\x1c.calculator.CalculateRequest\x1a\x1d.calculator.CalculateResponse\x12R\n" +
 	"\x11GenerateFibonacci\x12\x1c.calculator.FibonacciRequest\x1a\x1d.calculator.FibonacciResponse0\x01\x12F\n" +
 	"\vSendNumbers\x12\x19.calculator.NumberRequest\x1a\x1a.calculator.NumberResponse(\x01\x12<\n" +
 	"\x04Chat\x12\x17.calculator.ChatMessage\x1a\x17.calculator.ChatMessage(\x010\x01B\x13Z\x11/proto/gen;mainpbb\x06proto3"
@@ -383,17 +382,17 @@ var file_proto_main_proto_goTypes = []any{
 	(*ChatMessage)(nil),       // 0: calculator.ChatMessage
 	(*NumberRequest)(nil),     // 1: calculator.NumberRequest
 	(*NumberResponse)(nil),    // 2: calculator.NumberResponse
-	(*AddRequest)(nil),        // 3: calculator.AddRequest
-	(*AddResponse)(nil),       // 4: calculator.AddResponse
+	(*CalculateRequest)(nil),  // 3: calculator.CalculateRequest
+	(*CalculateResponse)(nil), // 4: calculator.CalculateResponse
 	(*FibonacciRequest)(nil),  // 5: calculator.FibonacciRequest
 	(*FibonacciResponse)(nil), // 6: calculator.FibonacciResponse
 }
 var file_proto_main_proto_depIdxs = []int32{
-	3, // 0: calculator.Calculator.Add:input_type -> calculator.AddRequest
+	3, // 0: calculator.Calculator.Sum:input_type -> calculator.CalculateRequest
 	5, // 1: calculator.Calculator.GenerateFibonacci:input_type -> calculator.FibonacciRequest
 	1, // 2: calculator.Calculator.SendNumbers:input_type -> calculator.NumberRequest
 	0, // 3: calculator.Calculator.Chat:input_type -> calculator.ChatMessage
-	4, // 4: calculator.Calculator.Add:output_type -> calculator.AddResponse
+	4, // 4: calculator.Calculator.Sum:output_type -> calculator.CalculateResponse
 	6, // 5: calculator.Calculator.GenerateFibonacci:output_type -> calculator.FibonacciResponse
 	2, // 6: calculator.Calculator.SendNumbers:output_type -> calculator.NumberResponse
 	0, // 7: calculator.Calculator.Chat:output_type -> calculator.ChatMessage

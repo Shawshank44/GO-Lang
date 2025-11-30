@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -17,6 +19,27 @@ import (
 
 type server struct {
 	mainpb.UnimplementedCalculatorServer
+}
+
+func (s *server) Sum(ctx context.Context, req *mainpb.CalculateRequest) (*mainpb.CalculateResponse, error) {
+	total := 0
+	for _, num := range req.Numbers {
+		switch req.CalculateFlag {
+		case "+":
+			total += int(num)
+		case "-":
+			total -= int(num)
+		case "*":
+			total = 1
+			total *= int(num)
+		default:
+			return nil, errors.New("please enter the valid flag or number")
+		}
+	}
+	return &mainpb.CalculateResponse{
+		Sum: int32(total),
+	}, nil
+
 }
 
 func (s *server) GenerateFibonacci(req *mainpb.FibonacciRequest, stream mainpb.Calculator_GenerateFibonacciServer) error {

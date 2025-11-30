@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Calculator_Add_FullMethodName               = "/calculator.Calculator/Add"
+	Calculator_Sum_FullMethodName               = "/calculator.Calculator/Sum"
 	Calculator_GenerateFibonacci_FullMethodName = "/calculator.Calculator/GenerateFibonacci"
 	Calculator_SendNumbers_FullMethodName       = "/calculator.Calculator/SendNumbers"
 	Calculator_Chat_FullMethodName              = "/calculator.Calculator/Chat"
@@ -29,7 +29,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CalculatorClient interface {
-	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
+	Sum(ctx context.Context, in *CalculateRequest, opts ...grpc.CallOption) (*CalculateResponse, error)
 	GenerateFibonacci(ctx context.Context, in *FibonacciRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FibonacciResponse], error)
 	SendNumbers(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[NumberRequest, NumberResponse], error)
 	Chat(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ChatMessage, ChatMessage], error)
@@ -43,10 +43,10 @@ func NewCalculatorClient(cc grpc.ClientConnInterface) CalculatorClient {
 	return &calculatorClient{cc}
 }
 
-func (c *calculatorClient) Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error) {
+func (c *calculatorClient) Sum(ctx context.Context, in *CalculateRequest, opts ...grpc.CallOption) (*CalculateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddResponse)
-	err := c.cc.Invoke(ctx, Calculator_Add_FullMethodName, in, out, cOpts...)
+	out := new(CalculateResponse)
+	err := c.cc.Invoke(ctx, Calculator_Sum_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ type Calculator_ChatClient = grpc.BidiStreamingClient[ChatMessage, ChatMessage]
 // All implementations must embed UnimplementedCalculatorServer
 // for forward compatibility.
 type CalculatorServer interface {
-	Add(context.Context, *AddRequest) (*AddResponse, error)
+	Sum(context.Context, *CalculateRequest) (*CalculateResponse, error)
 	GenerateFibonacci(*FibonacciRequest, grpc.ServerStreamingServer[FibonacciResponse]) error
 	SendNumbers(grpc.ClientStreamingServer[NumberRequest, NumberResponse]) error
 	Chat(grpc.BidiStreamingServer[ChatMessage, ChatMessage]) error
@@ -116,8 +116,8 @@ type CalculatorServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCalculatorServer struct{}
 
-func (UnimplementedCalculatorServer) Add(context.Context, *AddRequest) (*AddResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+func (UnimplementedCalculatorServer) Sum(context.Context, *CalculateRequest) (*CalculateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
 }
 func (UnimplementedCalculatorServer) GenerateFibonacci(*FibonacciRequest, grpc.ServerStreamingServer[FibonacciResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method GenerateFibonacci not implemented")
@@ -149,20 +149,20 @@ func RegisterCalculatorServer(s grpc.ServiceRegistrar, srv CalculatorServer) {
 	s.RegisterService(&Calculator_ServiceDesc, srv)
 }
 
-func _Calculator_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddRequest)
+func _Calculator_Sum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CalculateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CalculatorServer).Add(ctx, in)
+		return srv.(CalculatorServer).Sum(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Calculator_Add_FullMethodName,
+		FullMethod: Calculator_Sum_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalculatorServer).Add(ctx, req.(*AddRequest))
+		return srv.(CalculatorServer).Sum(ctx, req.(*CalculateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -200,8 +200,8 @@ var Calculator_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CalculatorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Add",
-			Handler:    _Calculator_Add_Handler,
+			MethodName: "Sum",
+			Handler:    _Calculator_Sum_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

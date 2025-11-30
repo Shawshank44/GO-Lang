@@ -5,7 +5,7 @@ package calculator;
 option go_package = "/proto/gen;mainpb";
 
 service Calculator {
-    rpc Add (AddRequest) returns (AddResponse);
+    rpc Sum (CalculateRequest) returns (CalculateResponse);
     rpc GenerateFibonacci(FibonacciRequest) returns (stream FibonacciResponse); // Server side stream
     rpc SendNumbers (stream NumberRequest) returns (NumberResponse); // Client side stream
     rpc Chat (stream ChatMessage) returns (stream ChatMessage); // Bi Directional stream 
@@ -23,12 +23,12 @@ message NumberResponse {
     int32 sum = 1;
 }
 
-message AddRequest {
-    int32 a = 1;
-    int32 b = 2;
+message CalculateRequest{
+   repeated int32 numbers = 1;
+   string calculate_flag = 2;
 }
 
-message AddResponse {
+message CalculateResponse {
     int32 sum = 1;
 }
 
