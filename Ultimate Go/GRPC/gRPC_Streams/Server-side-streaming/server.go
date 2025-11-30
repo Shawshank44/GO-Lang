@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type server struct {
@@ -95,6 +96,9 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	mainpb.RegisterCalculatorServer(grpcServer, &server{})
+
+	// enable reflection :
+	reflection.Register(grpcServer) // DO NOT USE THIS IN PRODUCTION.
 
 	log.Println("Server running in port :50051")
 	err = grpcServer.Serve(listener)
