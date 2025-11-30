@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding/gzip"
+	"google.golang.org/grpc/metadata"
 )
 
 func main() {
@@ -43,11 +44,18 @@ func main() {
 		A: 10,
 		B: 300,
 	}
-	res, err := client.Add(ctx, &req, grpc.UseCompressor(gzip.Name)) // if compression required for only particular request.
+	md := metadata.Pairs("authorization", "Bearer=hfhygfjhkijaihjysfhf", "test", "testing", "test2", "testing2") // setting Meta data
+	ctx = metadata.NewOutgoingContext(ctx, md)                                                                   // sending meta data
+	var resHeader metadata.MD                                                                                    // Storing the Headers
+	var resTrailer metadata.MD
+	res, err := client.Add(ctx, &req, grpc.Header(&resHeader), grpc.Trailer(&resTrailer), grpc.UseCompressor(gzip.Name)) // if compression required for only particular request.
 	if err != nil {
 		log.Fatalln("Could not add", err)
-		return
 	}
+	log.Println("Headers received :", resHeader)    // receiving the headers
+	log.Println("Test header :", resHeader["test"]) // received the test header
+	log.Println("Trailer :", resTrailer)
+	log.Println("Test Trailer", resTrailer["testtrailers"])
 
 	reqGreet := &mainapipb.HelloRequest{
 		Name: "john",
