@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/encoding/gzip"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 		return
 	}
 
-	connec, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(creds))
+	connec, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(creds), grpc.WithDefaultCallOptions(grpc.UseCompressor(gzip.Name)))
 	if err != nil {
 		log.Fatalln("Did not connect : ", err)
 		return
@@ -42,7 +43,7 @@ func main() {
 		A: 10,
 		B: 300,
 	}
-	res, err := client.Add(ctx, &req)
+	res, err := client.Add(ctx, &req, grpc.UseCompressor(gzip.Name)) // if compression required for only particular request.
 	if err != nil {
 		log.Fatalln("Could not add", err)
 		return
