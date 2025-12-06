@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package calculator;
 
+import "validate/validate.proto";
+
 option go_package = "/proto/gen;mainpb";
 
 service Calculator {
@@ -25,7 +27,8 @@ message NumberResponse {
 
 message CalculateRequest{
    repeated int32 numbers = 1;
-   string calculate_flag = 2;
+   // added validation rules
+   string calculate_flag = 2 [(validate.rules).string = {min_len: 1, max_len: 1},(validate.rules).string.pattern = "[a-zA-Z]+"]; // validation logic
 }
 
 message CalculateResponse {
