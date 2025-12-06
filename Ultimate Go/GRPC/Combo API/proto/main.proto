@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package main_api;
+
+import "validate/validate.proto";
+
+option go_package = "/proto/gen;mainpb";
+
+service Greeter {
+    rpc Greet (HelloRequest) returns (HelloRespoonse);
+}
+
+message HelloRequest {
+    string name = 1 [(validate.rules).string = {min_len: 5, max_len: 50},(validate.rules).string.pattern = "[a-zA-Z]+$"];
+}
+
+message HelloRespoonse {
+    string message = 1;
+}
