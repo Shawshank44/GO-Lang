@@ -3,11 +3,18 @@ syntax = "proto3";
 package main_api;
 
 import "validate/validate.proto";
+import "google/api/annotations.proto";
 
 option go_package = "/proto/gen;mainpb";
 
+
 service Greeter {
-    rpc Greet (HelloRequest) returns (HelloRespoonse);
+    rpc Greet (HelloRequest) returns (HelloRespoonse){
+    option (google.api.http) = {
+      post: "/v1/greet"
+      body: "*"
+    };
+  }
 }
 
 message HelloRequest {

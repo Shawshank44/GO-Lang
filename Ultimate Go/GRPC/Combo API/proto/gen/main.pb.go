@@ -7,13 +7,13 @@
 package mainpb
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -116,14 +116,14 @@ var File_main_proto protoreflect.FileDescriptor
 const file_main_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"main.proto\x12\bmain_api\x1a\x17validate/validate.proto\"9\n" +
+	"main.proto\x12\bmain_api\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"9\n" +
 	"\fHelloRequest\x12)\n" +
 	"\x04name\x18\x01 \x01(\tB\x15\xfaB\x12r\x10\x10\x05\x1822\n" +
 	"[a-zA-Z]+$R\x04name\"*\n" +
 	"\x0eHelloRespoonse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2D\n" +
-	"\aGreeter\x129\n" +
-	"\x05Greet\x12\x16.main_api.HelloRequest\x1a\x18.main_api.HelloRespoonseB\x13Z\x11/proto/gen;mainpbb\x06proto3"
+	"\amessage\x18\x01 \x01(\tR\amessage2Z\n" +
+	"\aGreeter\x12O\n" +
+	"\x05Greet\x12\x16.main_api.HelloRequest\x1a\x18.main_api.HelloRespoonse\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/greetB\x13Z\x11/proto/gen;mainpbb\x06proto3"
 
 var (
 	file_main_proto_rawDescOnce sync.Once
