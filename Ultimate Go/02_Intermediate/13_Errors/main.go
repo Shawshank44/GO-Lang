@@ -46,7 +46,6 @@ func readData() error {
 }
 
 func main() {
-
 	// res, err := sqrt(-13)
 
 	// if err != nil { // usually used
@@ -70,7 +69,6 @@ func main() {
 	// }
 
 	errsf := readData()
-
 	if errsf != nil {
 		fmt.Println(errsf)
 		return

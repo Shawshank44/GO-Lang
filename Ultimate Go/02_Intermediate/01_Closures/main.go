@@ -24,7 +24,6 @@ func main() {
 	fmt.Println(subtracter(3))
 	fmt.Println(subtracter(4))
 	fmt.Println(subtracter(5))
-
 }
 
 func Adder() func() int {

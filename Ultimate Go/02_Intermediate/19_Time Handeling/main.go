@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// Current Local time
 	fmt.Println(time.Now())
 
@@ -63,5 +62,4 @@ func main() {
 
 	// Compare times
 	fmt.Println("T2 is after ", t2.After(t1))
-
 }

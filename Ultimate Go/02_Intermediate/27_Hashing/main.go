@@ -15,7 +15,6 @@ func GenerateSalt() ([]byte, error) {
 		return nil, err
 	}
 	return salt, nil
-
 }
 
 func HashPassword(password string, salt []byte) string {
@@ -65,5 +64,4 @@ func main() {
 	} else {
 		fmt.Println("Invalid Submission")
 	}
-
 }

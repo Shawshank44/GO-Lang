@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	subcommand1 := flag.NewFlagSet("firstsub", flag.ExitOnError)  //go run main.go firstsub --help (to know more info)
-	subcommand2 := flag.NewFlagSet("secondsub", flag.ExitOnError) //go run main.go secondsub --help
+	subcommand1 := flag.NewFlagSet("firstsub", flag.ExitOnError)  // go run main.go firstsub --help (to know more info)
+	subcommand2 := flag.NewFlagSet("secondsub", flag.ExitOnError) // go run main.go secondsub --help
 
 	firstflag := subcommand1.Bool("Processing", false, "Command processing status")
 	secondflag := subcommand1.Int("bytes", 1024, "Byte length of the result")
@@ -35,5 +35,4 @@ func main() {
 	default:
 		fmt.Println("No subcommand entered")
 	}
-
 }

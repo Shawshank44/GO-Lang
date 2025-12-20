@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// converting string(type) number to integer(type) number
 	numStr := "12345"
 

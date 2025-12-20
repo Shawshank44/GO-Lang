@@ -56,6 +56,5 @@ func main() {
 			fmt.Println("Thankyou for playing! Good bye")
 			break
 		}
-
 	}
 }

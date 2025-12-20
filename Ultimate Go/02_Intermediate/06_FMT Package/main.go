@@ -3,7 +3,6 @@ package main
 import "fmt"
 
 func main() {
-
 	// Printing functions:
 	// fmt.Print("Hello")
 	// fmt.Print("Print!")
@@ -25,7 +24,7 @@ func main() {
 	// spf := fmt.Sprintf("Name : %s, Age : %d", "john", 34)
 	// fmt.Println(spf)
 
-	//Scanning functions :
+	// Scanning functions :
 	// var name string
 	// var age int
 	// fmt.Print("Enter your name and age : ")
@@ -34,12 +33,11 @@ func main() {
 	// // fmt.Scanf("%s %d", &name, &age)
 	// fmt.Printf("Name : %s, Age : %d \n", name, age)
 
-	//Error Formatting :
+	// Error Formatting :
 	err := CheckAge(19)
 	if err != nil {
 		fmt.Println("Error : ", err)
 	}
-
 }
 
 func CheckAge(age int) error {

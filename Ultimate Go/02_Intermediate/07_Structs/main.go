@@ -63,7 +63,7 @@ func main() {
 	// comparision of structs:
 	fmt.Println(p == p1)
 
-	//Annonymous structs
+	// Annonymous structs
 	// userad := struct {
 	// 	userName string
 	// 	email    string
@@ -73,5 +73,4 @@ func main() {
 	// }
 
 	// fmt.Println(userad.userName, userad.email)
-
 }

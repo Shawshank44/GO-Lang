@@ -84,5 +84,4 @@ func main() {
 	fmt.Printf("%.2f\n", flt)
 	fmt.Printf("%6.2f\n", flt)
 	fmt.Printf("%g\n", flt)
-
 }

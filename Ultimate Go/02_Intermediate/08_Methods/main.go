@@ -44,5 +44,4 @@ func main() {
 	num1 := MyInt(9)
 	fmt.Println(num.IsPositive())
 	fmt.Println(num1.IsPositive())
-
 }

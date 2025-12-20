@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	//Accessing the environment variables
+	// Accessing the environment variables
 	user := os.Getenv("USER")
 	home := os.Getenv("HOME")
 

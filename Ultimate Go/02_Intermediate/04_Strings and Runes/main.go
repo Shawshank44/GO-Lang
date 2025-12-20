@@ -3,7 +3,6 @@ package main
 import "fmt"
 
 func main() {
-
 	// message := "Hello\nGo"   // string with escape sequence character (\n to print on next line)
 	// message1 := "Hello\tGo"  // string with escape sequence character (\t to print on space in between)
 	// IsMessage := `Hello\nGo` // backticks (template literals) treats every this as string
@@ -29,7 +28,7 @@ func main() {
 	// Iteration of string :
 	// Str := "This string is used for iteration"
 
-	//normal iteration:
+	// normal iteration:
 	// for i := 0; i < len(Str); i++ {
 	// 	fmt.Println("Index : ", i, "Characters : ", string(Str[i]))
 	// }
@@ -60,5 +59,4 @@ func main() {
 	for _, runeValue := range WHATISUP {
 		fmt.Printf("%c\n", runeValue)
 	}
-
 }

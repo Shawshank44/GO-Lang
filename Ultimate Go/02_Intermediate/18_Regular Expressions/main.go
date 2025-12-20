@@ -9,11 +9,11 @@ func main() {
 	// Compile a regex pattern
 	regex := regexp.MustCompile(`[a-zA-Z0-9._+%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}`)
 
-	//test strings
+	// test strings
 	email1 := "user119@gmail.com"
 	email2 := "invalid_mail"
 
-	//Match
+	// Match
 	fmt.Println("email1 : ", regex.MatchString(email1))
 	fmt.Println("email2 : ", regex.MatchString(email2))
 

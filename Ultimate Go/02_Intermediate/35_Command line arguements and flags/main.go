@@ -32,5 +32,4 @@ func main() {
 
 	// go run main.go -name "James ding" -age 35  (Command example)
 	// go run main.go --help (command to know how the flags are programmed)
-
 }

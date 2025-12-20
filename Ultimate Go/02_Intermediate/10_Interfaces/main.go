@@ -73,6 +73,5 @@ func main() {
 	// measure(c)
 
 	// MyPrinter(1, "Strings", 45.9, true)
-
 	TypeCast(true)
 }

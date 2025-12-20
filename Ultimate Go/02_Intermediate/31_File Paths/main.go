@@ -31,7 +31,7 @@ func main() {
 	// return the extension :
 	fmt.Println(filepath.Ext(file))
 
-	//Trimming the file path
+	// Trimming the file path
 	fmt.Println(strings.TrimSuffix(file, filepath.Ext(file)))
 
 	// returning the relative path
@@ -54,5 +54,4 @@ func main() {
 		return
 	}
 	fmt.Println("absolute path : ", abspath)
-
 }

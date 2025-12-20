@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	str := "Hello Go!"
 
 	fmt.Println(str)
@@ -31,7 +30,7 @@ func main() {
 	stri := strconv.Itoa(num)
 	fmt.Println("Length after converting number into string", len(stri))
 
-	//2. String Splitting :
+	// 2. String Splitting :
 	fruits := "apple-orange-banana"
 	// comma := strings.Split(fruits, ",")
 	// fmt.Println(comma)
@@ -47,29 +46,29 @@ func main() {
 	strcon := "Hello Hi"
 	fmt.Println(strings.Contains(strcon, "Hello"))
 
-	//5. Strings replace :
+	// 5. Strings replace :
 	strrep := "Hello Replace"
 	replaced := strings.Replace(strrep, "Replace", "World", 1)
 	fmt.Println("Before replacing : ", strrep)
 	fmt.Println("After replacing : ", replaced)
 
-	//6. Trimming strings (spaces) :
+	// 6. Trimming strings (spaces) :
 	strspc := " Hello Everyone!	"
 	fmt.Println(strspc)
 	fmt.Println(strings.TrimSpace(strspc))
 
-	//7. Uppercase and lowercase :
+	// 7. Uppercase and lowercase :
 	strul := "UppErcAsE aNd lOwErCaSe"
 	fmt.Println("converting string to lower case : ", strings.ToLower(strul))
 	fmt.Println("converting string to UPPER CASE : ", strings.ToUpper(strul))
 
-	//8. Repeating strings
+	// 8. Repeating strings
 	fmt.Println(strings.Repeat(" Foo ", 3))
 
-	//9. Occurance and counting
+	// 9. Occurance and counting
 	fmt.Println(strings.Count("NANNANA", "A"))
 
-	//10. Prefix and suffix in string:
+	// 10. Prefix and suffix in string:
 	fmt.Println(strings.HasPrefix("Hello", "H"))
 	fmt.Println(strings.HasSuffix("Hello", "lo"))
 
@@ -105,5 +104,4 @@ func main() {
 	Builder.WriteString("Starting new!!")
 	res = Builder.String()
 	fmt.Println(res)
-
 }

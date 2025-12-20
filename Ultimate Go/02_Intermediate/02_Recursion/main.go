@@ -12,7 +12,6 @@ func main() {
 
 	n := 12
 	fmt.Printf("Fibonacci(%d) = %d\n", n, Fibonacci(n))
-
 }
 
 func Factorial(n int) int {
@@ -22,7 +21,6 @@ func Factorial(n int) int {
 	}
 	// Recursive case : factorial of n is n * factorial (n - 1)
 	return n * Factorial(n-1)
-
 }
 
 func SumOfDigits(n int) int {

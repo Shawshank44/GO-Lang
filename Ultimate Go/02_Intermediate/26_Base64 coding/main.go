@@ -23,5 +23,4 @@ func main() {
 	// Url safe encoding :
 	UrlSafeEncoded := base64.URLEncoding.EncodeToString(data)
 	fmt.Println("URL safe encoded : ", UrlSafeEncoded)
-
 }

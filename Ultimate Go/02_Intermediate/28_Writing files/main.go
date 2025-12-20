@@ -37,5 +37,4 @@ func main() {
 	} else {
 		fmt.Println("write string file updated")
 	}
-
 }

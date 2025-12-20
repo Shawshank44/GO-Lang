@@ -90,5 +90,4 @@ func main() {
 	}
 
 	fmt.Println(string(bookxml))
-
 }

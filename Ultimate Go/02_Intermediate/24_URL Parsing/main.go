@@ -55,12 +55,11 @@ func main() {
 	values.Add("city", "london")
 	values.Add("country", "UK")
 
-	//Encode:
+	// Encode:
 	encodedqry := values.Encode()
 	fmt.Println("Encoded Url", encodedqry)
 
 	base := "https://example.com/search"
 	fullURL := base + "?" + encodedqry
 	fmt.Println(fullURL)
-
 }

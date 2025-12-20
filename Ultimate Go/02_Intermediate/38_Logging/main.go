@@ -14,7 +14,7 @@ import (
 // )
 
 func main() {
-	//printing a log message
+	// printing a log message
 	// log.Println("This is log message")
 
 	// // Setting a prefix
@@ -72,5 +72,4 @@ func main() {
 
 	logger.Info("This is an info message")
 	logger.Info("User logged in ", zap.String("Username", "John doe"), zap.String("Method", "GET"))
-
 }

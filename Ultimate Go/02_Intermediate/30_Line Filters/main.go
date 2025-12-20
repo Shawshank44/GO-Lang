@@ -39,5 +39,4 @@ func main() {
 	if err != nil {
 		fmt.Println("error scanning file ", err)
 	}
-
 }

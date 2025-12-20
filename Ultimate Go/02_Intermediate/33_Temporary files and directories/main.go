@@ -12,7 +12,6 @@ func CheckError(err error) {
 }
 
 func main() {
-
 	// Making a temporary file
 	// Tempfile, err := os.CreateTemp("tempdir", "Tempfile")
 	// CheckError(err)
@@ -27,5 +26,4 @@ func main() {
 
 	defer os.RemoveAll(tempdir)
 	fmt.Println("Temporary directory created: ", tempdir)
-
 }

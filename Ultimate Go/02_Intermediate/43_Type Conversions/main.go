@@ -22,7 +22,6 @@ func main() {
 	var h []byte
 	h = []byte(g)
 	fmt.Printf("The g is %T \n", h)
-
 	byts := []byte{72, 120} // can only take upto 255
 	fmt.Println(string(byts))
 }

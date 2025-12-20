@@ -18,7 +18,6 @@ func main() {
 		LastName:  "Doe",
 		Age:       36,
 	}
-
 	jsonData, err := json.Marshal(person)
 	if err != nil {
 		log.Fatal(err)

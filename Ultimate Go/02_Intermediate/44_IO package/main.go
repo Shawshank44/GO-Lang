@@ -79,7 +79,6 @@ func WriteToFile(fpath string, data string) {
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-
 }
 
 type MyClose struct { // interface example
@@ -102,7 +101,7 @@ func main() {
 	bufferExample()
 	// Multi Reader Example :
 	multiReaderExample()
-	//Pipe Example:
+	// Pipe Example:
 	pipeExample()
 	WriteToFile("Io.txt", "Hello IO package")
 
@@ -111,5 +110,4 @@ func main() {
 		name: "Tester",
 	}
 	closeResourse(res)
-
 }

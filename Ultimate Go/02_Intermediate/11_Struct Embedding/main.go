@@ -32,6 +32,5 @@ func main() {
 	fmt.Println("Name : ", emp.Age)
 	fmt.Println("Name : ", emp.emp_ID)
 	fmt.Println("Name : ", emp.salary)
-
 	emp.introduce()
 }

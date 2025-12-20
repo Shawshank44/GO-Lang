@@ -12,7 +12,6 @@ func main() {
 
 	v := 8
 	fmt.Println(ModifyValue(&v))
-
 }
 
 func ModifyValue(ptr *int) int {

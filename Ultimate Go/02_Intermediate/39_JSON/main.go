@@ -43,12 +43,11 @@ func main() {
 
 	fmt.Println(string(Jsonen))
 
-	//Using JSON (decoding)
+	// Using JSON (decoding)
 	JsonData := `{"employee_name":"Jen calvet","employee_age":35,"employee_id":"XYZ0065","employee_role":"AI engineer"}`
 
 	var employee Employee
 	err = json.Unmarshal([]byte(JsonData), &employee)
-
 	if err != nil {
 		fmt.Println(err)
 		return

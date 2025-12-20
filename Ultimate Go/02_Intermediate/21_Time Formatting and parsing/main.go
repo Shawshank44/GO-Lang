@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// Monday Jan 2 15:04:05 MST 2006
 
 	layout := "2006-01-02T15:04:05Z07:00"
@@ -24,5 +23,4 @@ func main() {
 
 	t1, err := time.Parse(layout1, str1)
 	fmt.Println(t1)
-
 }
