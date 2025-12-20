@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gRPC_school_api/internals/api/handlers"
+	"gRPC_school_api/internals/repositories/mongodb"
 	pb "gRPC_school_api/proto/gen"
 	"log"
 	"net"
@@ -14,6 +15,8 @@ import (
 )
 
 func main() {
+	mongodb.CreateMongoClient()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error in loading the .env file", err)
@@ -38,5 +41,4 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to SERVE", err)
 	}
-
 }
