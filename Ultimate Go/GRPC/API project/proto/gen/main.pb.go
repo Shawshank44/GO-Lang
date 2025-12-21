@@ -7,11 +7,12 @@
 package gRPCapipb
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -463,18 +464,20 @@ func file_main_proto_rawDescGZIP() []byte {
 	return file_main_proto_rawDescData
 }
 
-var file_main_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_main_proto_goTypes = []any{
-	(*StudentCount)(nil),               // 0: main.StudentCount
-	(*DeleteTeachersConfirmation)(nil), // 1: main.DeleteTeachersConfirmation
-	(*TeacherID)(nil),                  // 2: main.TeacherID
-	(*TeacherIDs)(nil),                 // 3: main.TeacherIDs
-	(*GetTeachersRequest)(nil),         // 4: main.GetTeachersRequest
-	(*Teacher)(nil),                    // 5: main.Teacher
-	(*Teachers)(nil),                   // 6: main.Teachers
-	(*SortField)(nil),                  // 7: main.SortField
-	(*Students)(nil),                   // 8: main.Students
-}
+var (
+	file_main_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+	file_main_proto_goTypes  = []any{
+		(*StudentCount)(nil),               // 0: main.StudentCount
+		(*DeleteTeachersConfirmation)(nil), // 1: main.DeleteTeachersConfirmation
+		(*TeacherID)(nil),                  // 2: main.TeacherID
+		(*TeacherIDs)(nil),                 // 3: main.TeacherIDs
+		(*GetTeachersRequest)(nil),         // 4: main.GetTeachersRequest
+		(*Teacher)(nil),                    // 5: main.Teacher
+		(*Teachers)(nil),                   // 6: main.Teachers
+		(*SortField)(nil),                  // 7: main.SortField
+		(*Students)(nil),                   // 8: main.Students
+	}
+)
 var file_main_proto_depIdxs = []int32{
 	2,  // 0: main.TeacherIDs.ids:type_name -> main.TeacherID
 	5,  // 1: main.GetTeachersRequest.teacher:type_name -> main.Teacher

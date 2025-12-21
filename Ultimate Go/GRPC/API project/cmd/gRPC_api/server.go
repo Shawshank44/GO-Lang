@@ -30,7 +30,7 @@ func main() {
 	reflection.Register(server)
 
 	port := os.Getenv("SERVER_PORT")
-	fmt.Println("GRPC Server is running on port : ", port)
+	fmt.Println("GRPC Server is running on port ", port)
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
