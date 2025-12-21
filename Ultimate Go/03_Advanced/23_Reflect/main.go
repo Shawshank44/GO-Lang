@@ -82,5 +82,4 @@ func main() {
 	m := v.MethodByName(method.Name)
 	results := m.Call([]reflect.Value{reflect.ValueOf("Alice"), reflect.ValueOf("DOGE")})
 	fmt.Println(results[0].String())
-
 }

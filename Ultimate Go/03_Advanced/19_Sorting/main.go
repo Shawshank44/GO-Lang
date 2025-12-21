@@ -84,5 +84,4 @@ func main() {
 		return stringslice[i][len(stringslice[i])-1] < stringslice[j][len(stringslice[j])-1]
 	})
 	fmt.Println("Sorted by last character : ", stringslice)
-
 }

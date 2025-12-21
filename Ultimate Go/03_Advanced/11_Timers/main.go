@@ -68,5 +68,4 @@ func main() {
 			fmt.Println("Timer2 expired")
 		}
 	}
-
 }

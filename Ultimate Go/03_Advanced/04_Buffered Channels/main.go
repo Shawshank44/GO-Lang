@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// Basic Buffer channel example :
 	// ch := make(chan any, 2)
 
@@ -48,7 +47,6 @@ func main() {
 	// fmt.Println("Value 1: ", <-CH)
 	// fmt.Println("Value 2: ", <-CH)
 	// fmt.Println("End of program")
-
 }
 
 /*

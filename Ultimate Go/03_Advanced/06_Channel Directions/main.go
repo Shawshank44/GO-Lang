@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-//Send only channel:
+// Send only channel:
 func SendOnlyChannel(ch chan<- any) {
 	go func() {
 		for i := range 5 {
@@ -22,7 +22,7 @@ func ReceiveOnlyChannel(ch <-chan any) { // type of channel must be same even us
 func main() {
 	ch := make(chan any) // Bidirectinal channel which can accept both send and receive
 
-	//Send only channel
+	// Send only channel
 	SendOnlyChannel(ch)
 
 	// Receive only channel

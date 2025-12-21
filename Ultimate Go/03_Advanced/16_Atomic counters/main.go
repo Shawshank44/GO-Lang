@@ -22,7 +22,6 @@ func main() {
 	var wg sync.WaitGroup
 	numGoroutines := 10
 	counter := &AtomicCounter{}
-
 	for range numGoroutines {
 		wg.Add(1)
 		go func() {

@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	pid := os.Getpid()
 
 	fmt.Println(pid)

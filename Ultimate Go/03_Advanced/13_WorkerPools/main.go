@@ -64,7 +64,7 @@ func main() {
 	ticketResults := make(chan int)
 
 	// start ticket processor/worker
-	for range 3 { //number of workers
+	for range 3 { // number of workers
 		go TicketProcessor(ticketRequests, ticketResults)
 	}
 
@@ -77,5 +77,4 @@ func main() {
 	for range numRequests {
 		fmt.Printf("Ticket for personId %d processed sucessfully! \n", <-ticketResults)
 	}
-
 }

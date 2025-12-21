@@ -26,5 +26,4 @@ func main() {
 
 	receiver := <-ch
 	fmt.Println(receiver)
-
 }

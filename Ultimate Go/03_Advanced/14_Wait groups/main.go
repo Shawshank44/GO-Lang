@@ -93,5 +93,4 @@ func main() {
 
 	// Construction is finished
 	fmt.Println("Construction is finished")
-
 }

@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// Basic command :
 	// cmd := exec.Command("cmd", "/C", "echo", "Hello World")
 	// output, err := cmd.Output()
@@ -103,5 +102,4 @@ func main() {
 	}
 
 	fmt.Println("Output", string(output))
-
 }

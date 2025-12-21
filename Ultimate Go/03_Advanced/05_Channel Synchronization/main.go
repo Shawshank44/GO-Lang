@@ -52,7 +52,6 @@ func main() {
 		}
 		close(data) // Closes the
 	}()
-
 	for value := range data {
 		fmt.Println("Recevied value : ", value, " : ", time.Now())
 	}

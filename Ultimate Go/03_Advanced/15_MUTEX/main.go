@@ -69,7 +69,6 @@ func main() {
 
 	wg.Wait()
 	fmt.Printf("Final counter value : %d \n", counter)
-
 }
 
 /*

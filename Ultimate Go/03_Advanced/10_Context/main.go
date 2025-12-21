@@ -41,7 +41,6 @@ func logWithContext(ctx context.Context, message string) {
 }
 
 func main() {
-
 	// **** Difference between Context.TODO and Context.Background
 	// todoContext := context.TODO()
 	// contextBKG := context.Background()
@@ -72,7 +71,7 @@ func main() {
 
 	// Cancellation example with timout and manual
 	ctx := context.Background()
-	//with time out:
+	// with time out:
 	// ctx, cancel := context.WithTimeout(ctx, 2*time.Second) // timer of the context starts here. You have this specified time duration to use this context, after this time duration, the context will send a cancelation signal
 	// defer cancel()
 
@@ -97,5 +96,4 @@ func main() {
 	}
 
 	logWithContext(ctx, "This is just a log message") // contextual logging
-
 }

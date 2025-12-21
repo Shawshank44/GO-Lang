@@ -28,6 +28,5 @@ func main() {
 	}()
 
 	fmt.Println(greeting)
-
 	time.Sleep(2 * time.Second)
 }
