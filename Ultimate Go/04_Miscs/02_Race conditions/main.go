@@ -28,7 +28,6 @@ func main() {
 	for range numGoroutines {
 		go Increment()
 	}
-
 	wg.Wait()
 	fmt.Printf("Final counter value : %d \n", counter)
 }

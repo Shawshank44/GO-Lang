@@ -15,7 +15,7 @@ type Person struct {
 */
 
 func main() {
-	var pool = sync.Pool{
+	pool := sync.Pool{
 		New: func() any {
 			fmt.Println("Creating a new person.")
 			return &Person{}

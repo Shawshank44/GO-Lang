@@ -54,7 +54,7 @@ func main() {
 
 	// wg.Wait()
 
-	// Heavy task simulation
+	// Heavy task simulation:
 	numthreads := 4
 	runtime.GOMAXPROCS(numthreads)
 	var wg sync.WaitGroup
@@ -64,7 +64,6 @@ func main() {
 		go HeavyTask(i, &wg)
 	}
 	wg.Wait()
-
 }
 
 /*

@@ -5,9 +5,7 @@ import (
 	"sync"
 )
 
-var (
-	once sync.Once
-)
+var once sync.Once
 
 func Initialize() {
 	fmt.Println("This will not be repeated no matter how many time we call this function using once.do")
