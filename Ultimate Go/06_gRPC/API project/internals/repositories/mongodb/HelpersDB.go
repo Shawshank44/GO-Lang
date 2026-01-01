@@ -63,17 +63,18 @@ func MapModelTeacherToPb(teacherModel models.Teacher) *pb.Teacher {
 }
 
 // TODO:
-// func MapModelStudentToPb(studentModel models.Student) *pb.Student {
-// 	return MapModelToPb(studentModel, func() *pb.Student {
-// 		return &pb.Student{}
-// 	})
-// }
+func MapModelStudentToPb(studentModel models.Student) *pb.Student {
+	return MapModelToPb(studentModel, func() *pb.Student {
+		return &pb.Student{}
+	})
+}
+
 // TODO:
-// func MapModelExecToPb(execModel models.Exec) *pb.Exec {
-// 	return MapModelToPb(execModel, func() *pb.Exec {
-// 		return &pb.Exec{}
-// 	})
-// }
+func MapModelExecToPb(execModel models.Exec) *pb.Exec {
+	return MapModelToPb(execModel, func() *pb.Exec {
+		return &pb.Exec{}
+	})
+}
 
 func MapPbToModel[M, P any](pbStruct P, newModel func() *M) *M {
 	modelStruct := newModel()
@@ -97,15 +98,15 @@ func MapPbTeacherToModelTeacher(pbTeacher *pb.Teacher) *models.Teacher {
 }
 
 // TODO:
-// func MapPbStudentToModelStudent(pbStudent *pb.Student) *models.Student {
-// 	return MapPbToModel(pbStudent, func() *models.Student {
-// 		return &models.Student{}
-// 	})
-// }
+func MapPbStudentToModelStudent(pbStudent *pb.Student) *models.Student {
+	return MapPbToModel(pbStudent, func() *models.Student {
+		return &models.Student{}
+	})
+}
 
 // TODO:
-// func MapPbExecToModelExec(pbExec *pb.Exec) *models.Exec{
-// 	return MapPbToModel(pbExec, func() *models.Exec {
-// 		return &models.Exec{}
-// 	})
-// }
+func MapPbExecToModelExec(pbExec *pb.Exec) *models.Exec {
+	return MapPbToModel(pbExec, func() *models.Exec {
+		return &models.Exec{}
+	})
+}
