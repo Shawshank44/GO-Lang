@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AddExecsToDB(ctx context.Context, execsFromReq []*pb.Exec) ([]*pb.Exec, error) {
@@ -48,3 +49,35 @@ func AddExecsToDB(ctx context.Context, execsFromReq []*pb.Exec) ([]*pb.Exec, err
 	}
 	return addedExecs, nil
 }
+
+func GetExecsfromDB(ctx context.Context, sortOptions primitive.D, filter primitive.M, pageNumber, pageSize uint32) ([]*pb.Exec, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal Error")
+	}
+	defer client.Disconnect(ctx)
+	collection := client.Database("School").Collection("execs")
+
+	findOptions := options.Find()
+	findOptions.SetSkip(int64((pageNumber - 1) * pageSize))
+	findOptions.SetLimit(int64(pageSize))
+
+	if len(sortOptions) > 0 {
+		findOptions.SetSort(sortOptions)
+	}
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal Error")
+	}
+	defer cursor.Close(ctx)
+
+	execs, err := DecodeEntities(ctx, cursor, pbModelExec, newModelExec)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	return execs, nil
+}
+
+func pbModelExec() *pb.Exec { return &pb.Exec{} }
+
+func newModelExec() *models.Exec { return &models.Exec{} }

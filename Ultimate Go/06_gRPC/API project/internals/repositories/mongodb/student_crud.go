@@ -7,6 +7,7 @@ import (
 	pb "gRPC_school_api/proto/gen"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AddStudentsToDB(ctx context.Context, studentsFromReq []*pb.Student) ([]*pb.Student, error) {
@@ -39,3 +40,35 @@ func AddStudentsToDB(ctx context.Context, studentsFromReq []*pb.Student) ([]*pb.
 	}
 	return addedStudents, nil
 }
+
+func GetStudentsfromDB(ctx context.Context, sortOptions primitive.D, filter primitive.M, pageNumber, pageSize uint32) ([]*pb.Student, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal Error")
+	}
+	defer client.Disconnect(ctx)
+	collection := client.Database("School").Collection("students")
+
+	findOptions := options.Find()
+	findOptions.SetSkip(int64((pageNumber - 1) * pageSize))
+	findOptions.SetLimit(int64(pageSize))
+
+	if len(sortOptions) > 0 {
+		findOptions.SetSort(sortOptions)
+	}
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal Error")
+	}
+	defer cursor.Close(ctx)
+
+	students, err := DecodeEntities(ctx, cursor, pbModelStudent, newModelStudent)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	return students, nil
+}
+
+func pbModelStudent() *pb.Student { return &pb.Student{} }
+
+func newModelStudent() *models.Student { return &models.Student{} }

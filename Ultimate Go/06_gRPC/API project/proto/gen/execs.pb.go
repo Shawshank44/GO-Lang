@@ -7,12 +7,11 @@
 package gRPCapipb
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -662,8 +661,8 @@ type GetExecsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Exec          *Exec                  `protobuf:"bytes,1,opt,name=exec,proto3" json:"exec,omitempty"`
 	SortBy        []*SortField           `protobuf:"bytes,2,rep,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
-	PageNumber    int32                  `protobuf:"varint,3,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
-	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageNumber    uint32                 `protobuf:"varint,3,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -712,14 +711,14 @@ func (x *GetExecsRequest) GetSortBy() []*SortField {
 	return nil
 }
 
-func (x *GetExecsRequest) GetPageNumber() int32 {
+func (x *GetExecsRequest) GetPageNumber() uint32 {
 	if x != nil {
 		return x.PageNumber
 	}
 	return 0
 }
 
-func (x *GetExecsRequest) GetPageSize() int32 {
+func (x *GetExecsRequest) GetPageSize() uint32 {
 	if x != nil {
 		return x.PageSize
 	}
@@ -948,9 +947,9 @@ const file_execs_proto_rawDesc = "" +
 	"\x04exec\x18\x01 \x01(\v2\n" +
 	".main.ExecR\x04exec\x12(\n" +
 	"\asort_by\x18\x02 \x03(\v2\x0f.main.SortFieldR\x06sortBy\x12\x1f\n" +
-	"\vpage_number\x18\x03 \x01(\x05R\n" +
+	"\vpage_number\x18\x03 \x01(\rR\n" +
 	"pageNumber\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x9d\x03\n" +
+	"\tpage_size\x18\x04 \x01(\rR\bpageSize\"\x9d\x03\n" +
 	"\x04Exec\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +

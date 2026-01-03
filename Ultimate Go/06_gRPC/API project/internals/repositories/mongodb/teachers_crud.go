@@ -10,7 +10,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -45,19 +44,22 @@ func AddTeachersToDB(ctx context.Context, teachersFromReq []*pb.Teacher) ([]*pb.
 	return addedTeachers, nil
 }
 
-func GetTeachersfromDB(ctx context.Context, sortOptions bson.D, filter bson.M) ([]*pb.Teacher, error) {
+func GetTeachersfromDB(ctx context.Context, sortOptions primitive.D, filter primitive.M, pageNumber, pageSize uint32) ([]*pb.Teacher, error) {
 	client, err := CreateMongoClient()
 	if err != nil {
 		return nil, utils.ErrorHandler(err, "Internal Error")
 	}
 	defer client.Disconnect(ctx)
 	collection := client.Database("School").Collection("teachers")
-	var cursor *mongo.Cursor
-	if len(sortOptions) < 1 {
-		cursor, err = collection.Find(ctx, filter)
-	} else {
-		cursor, err = collection.Find(ctx, filter, options.Find().SetSort(sortOptions))
+
+	findOptions := options.Find()
+	findOptions.SetSkip(int64((pageNumber - 1) * pageSize))
+	findOptions.SetLimit(int64(pageSize))
+
+	if len(sortOptions) > 0 {
+		findOptions.SetSort(sortOptions)
 	}
+	cursor, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, utils.ErrorHandler(err, "Internal Error")
 	}
