@@ -2,11 +2,14 @@ package mongodb
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"gRPC_school_api/internals/models"
 	"gRPC_school_api/pkg/utils"
 	pb "gRPC_school_api/proto/gen"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -81,3 +84,42 @@ func GetExecsfromDB(ctx context.Context, sortOptions primitive.D, filter primiti
 func pbModelExec() *pb.Exec { return &pb.Exec{} }
 
 func newModelExec() *models.Exec { return &models.Exec{} }
+
+func UpdateExecsinDB(ctx context.Context, PbExecs []*pb.Exec) ([]*pb.Exec, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	defer client.Disconnect(ctx)
+	var updatedExecs []*pb.Exec
+	for _, exec := range PbExecs {
+		if exec.Id == "" {
+			return nil, utils.ErrorHandler(errors.New("id Cannot be blank"), "id cannot be blank")
+		}
+		modelExec := MapPbExecToModelExec(exec)
+		objId, err := primitive.ObjectIDFromHex(exec.Id)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Internal error")
+		}
+		// Convert ModelExec to BSON document:
+		modelDoc, err := bson.Marshal(modelExec)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Internal error")
+		}
+		var updateDoc bson.M
+		err = bson.Unmarshal(modelDoc, &updateDoc)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Internal error")
+		}
+		// Removing the Id field from the update document
+		delete(updateDoc, "_id")
+
+		_, err = client.Database("School").Collection("execs").UpdateOne(ctx, bson.M{"_id": objId}, bson.M{"$set": updateDoc})
+		if err != nil {
+			return nil, utils.ErrorHandler(err, fmt.Sprintf("Error updating exec id : %v", exec.Id))
+		}
+		updatedExec := MapModelExecToPb(*modelExec)
+		updatedExecs = append(updatedExecs, updatedExec)
+	}
+	return updatedExecs, nil
+}
