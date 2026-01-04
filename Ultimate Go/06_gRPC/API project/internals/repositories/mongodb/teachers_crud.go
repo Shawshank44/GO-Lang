@@ -10,6 +10,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -147,4 +148,74 @@ func DeleteTeachersFromDB(ctx context.Context, teacherIdsToDelete []string) ([]s
 		deletedIds[i] = id.Hex()
 	}
 	return deletedIds, nil
+}
+
+func GetStudentsByTeachersIdFromDb(ctx context.Context, teacherId string) ([]*pb.Student, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	defer client.Disconnect(ctx)
+
+	objId, err := primitive.ObjectIDFromHex(teacherId)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	var teacher models.Teacher
+	err = client.Database("School").Collection("teachers").FindOne(ctx, bson.M{"_id": objId}).Decode(&teacher)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, utils.ErrorHandler(err, "Internal error")
+		}
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	cursor, err := client.Database("School").Collection("students").Find(ctx, bson.M{"class": teacher.Class})
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	defer cursor.Close(ctx)
+
+	students, err := DecodeEntities(ctx, cursor, func() *pb.Student { return &pb.Student{} }, func() *models.Student { return &models.Student{} })
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	return students, nil
+}
+
+func GetStudentCountTeacherID(ctx context.Context, teacherId string) (int64, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "Internal error")
+	}
+
+	defer client.Disconnect(ctx)
+
+	objId, err := primitive.ObjectIDFromHex(teacherId)
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "Internal error")
+	}
+
+	var teacher models.Teacher
+	err = client.Database("School").Collection("teachers").FindOne(ctx, bson.M{"_id": objId}).Decode(&teacher)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, utils.ErrorHandler(err, "Internal error")
+		}
+		return 0, utils.ErrorHandler(err, "Internal error")
+	}
+
+	count, err := client.Database("School").Collection("students").CountDocuments(ctx, bson.M{"class": teacher.Class})
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "Internal error")
+	}
+
+	return count, nil
 }
