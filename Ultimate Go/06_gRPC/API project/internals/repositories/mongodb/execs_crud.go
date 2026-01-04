@@ -123,3 +123,37 @@ func UpdateExecsinDB(ctx context.Context, PbExecs []*pb.Exec) ([]*pb.Exec, error
 	}
 	return updatedExecs, nil
 }
+
+func DeleteExecsFromDB(ctx context.Context, execIdsToDelete []string) ([]string, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	defer client.Disconnect(ctx)
+
+	objectIds := make([]primitive.ObjectID, len(execIdsToDelete))
+	for i, id := range execIdsToDelete {
+		objectId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Invalid ID")
+		}
+		objectIds[i] = objectId
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": objectIds}}
+
+	res, err := client.Database("School").Collection("execs").DeleteMany(ctx, filter)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Error in deleting the _Id")
+	}
+
+	if res.DeletedCount == 0 {
+		return nil, utils.ErrorHandler(err, "No execs were deleted")
+	}
+
+	deletedIds := make([]string, res.DeletedCount)
+	for i, id := range objectIds {
+		deletedIds[i] = id.Hex()
+	}
+	return deletedIds, nil
+}

@@ -114,3 +114,37 @@ func UpdateStudentsinDB(ctx context.Context, PbStudents []*pb.Student) ([]*pb.St
 	}
 	return updatedStudents, nil
 }
+
+func DeleteStudentsFromDB(ctx context.Context, studentIdsToDelete []string) ([]string, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+	defer client.Disconnect(ctx)
+
+	objectIds := make([]primitive.ObjectID, len(studentIdsToDelete))
+	for i, id := range studentIdsToDelete {
+		objectId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "Invalid ID")
+		}
+		objectIds[i] = objectId
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": objectIds}}
+
+	res, err := client.Database("School").Collection("students").DeleteMany(ctx, filter)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Error in deleting the _Id")
+	}
+
+	if res.DeletedCount == 0 {
+		return nil, utils.ErrorHandler(err, "No students were deleted")
+	}
+
+	deletedIds := make([]string, res.DeletedCount)
+	for i, id := range objectIds {
+		deletedIds[i] = id.Hex()
+	}
+	return deletedIds, nil
+}
