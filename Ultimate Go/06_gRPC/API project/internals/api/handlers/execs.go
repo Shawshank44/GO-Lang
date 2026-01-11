@@ -111,3 +111,23 @@ func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecL
 		Token:  token,
 	}, nil
 }
+
+func (s *Server) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
+	if req.Id == "" || req.NewPassword == "" || req.CurrentPassword == "" {
+		return nil, status.Error(codes.Unauthenticated, "Fields cannot be blank")
+	}
+	username, role, err := mongodb.UpdatePasswordInDB(ctx, req)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	token, err := utils.SignToken(req.Id, username, role)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	return &pb.UpdatePasswordResponse{
+		PasswordUpdated: true,
+		Token:           token,
+	}, nil
+}
