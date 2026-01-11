@@ -16,12 +16,9 @@ message DeleteStudentsConfirmation {
     repeated string deleted_ids = 2;
 }
 
-message StudentID {
-    string id = 1;
-}
 
 message StudentIDs {
-    repeated StudentID ids = 1;
+    repeated string ids = 1;
 }
 
 message GetStudentsRequest {

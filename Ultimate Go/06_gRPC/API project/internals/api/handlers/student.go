@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"gRPC_school_api/internals/models"
 	"gRPC_school_api/internals/repositories/mongodb"
 	pb "gRPC_school_api/proto/gen"
@@ -61,17 +60,17 @@ func (s *Server) UpdateStudents(ctx context.Context, req *pb.Students) (*pb.Stud
 }
 
 func (s *Server) DeleteStudents(ctx context.Context, req *pb.StudentIDs) (*pb.DeleteStudentsConfirmation, error) {
-	ids := req.GetIds()
-	var studentIdsToDelete []string
+	// ids := req.GetIds()
+	// var studentIdsToDelete []string
 
-	for _, v := range ids {
-		if v.Id == "" {
-			return nil, errors.New("id Field cannot be blank")
-		}
-		studentIdsToDelete = append(studentIdsToDelete, v.Id)
-	}
+	// for _, v := range ids {
+	// 	if v.Id == "" {
+	// 		return nil, errors.New("id Field cannot be blank")
+	// 	}
+	// 	studentIdsToDelete = append(studentIdsToDelete, v.Id)
+	// }
 
-	deletedIds, err := mongodb.DeleteStudentsFromDB(ctx, studentIdsToDelete)
+	deletedIds, err := mongodb.DeleteStudentsFromDB(ctx, req.GetIds())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"gRPC_school_api/internals/models"
 	"gRPC_school_api/internals/repositories/mongodb"
 	"gRPC_school_api/pkg/utils"
@@ -61,17 +60,17 @@ func (s *Server) UpdateExecs(ctx context.Context, req *pb.Execs) (*pb.Execs, err
 }
 
 func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIDs) (*pb.DeleteExecsConfirmation, error) {
-	ids := req.GetIds()
-	var execIdsToDelete []string
+	// ids := req.GetIds()
+	// var execIdsToDelete []string
 
-	for _, v := range ids {
-		if v.Id == "" {
-			return nil, errors.New("id Field cannot be blank")
-		}
-		execIdsToDelete = append(execIdsToDelete, v.Id)
-	}
+	// for _, v := range ids {
+	// 	if v.Id == "" {
+	// 		return nil, errors.New("id Field cannot be blank")
+	// 	}
+	// 	execIdsToDelete = append(execIdsToDelete, v.Id)
+	// }
 
-	deletedIds, err := mongodb.DeleteExecsFromDB(ctx, execIdsToDelete)
+	deletedIds, err := mongodb.DeleteExecsFromDB(ctx, req.GetIds())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -129,5 +128,16 @@ func (s *Server) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordReque
 	return &pb.UpdatePasswordResponse{
 		PasswordUpdated: true,
 		Token:           token,
+	}, nil
+}
+
+func (s *Server) DeactivateUser(ctx context.Context, req *pb.ExecIDs) (*pb.Confirmation, error) {
+	result, err := mongodb.DeactivateUserInDB(ctx, req.GetIds())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Unable to deactivate user")
+	}
+
+	return &pb.Confirmation{
+		Confirmation: result.ModifiedCount > 0,
 	}, nil
 }
