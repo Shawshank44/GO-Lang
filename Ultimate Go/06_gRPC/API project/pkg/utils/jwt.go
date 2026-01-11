@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func SignToken(userID int, Username, Role string) (string, error) {
+func SignToken(userID string, Username, Role string) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	jwtExpiresIn := os.Getenv("JWT_EXPIRES_IN")
 	claims := jwt.MapClaims{

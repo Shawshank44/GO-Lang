@@ -59,7 +59,7 @@ message ExecLogoutResponse {
 message EmptyRequest {} // EMPTY no data needed.
 
 message ExecLoginResponse {
-    bool string = 1;
+    bool status = 1;
     string token = 2;
 }
 

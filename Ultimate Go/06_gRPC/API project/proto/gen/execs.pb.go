@@ -415,7 +415,7 @@ func (*EmptyRequest) Descriptor() ([]byte, []int) {
 
 type ExecLoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	String_       bool                   `protobuf:"varint,1,opt,name=string,proto3" json:"string,omitempty"`
+	Status        bool                   `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
 	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -451,9 +451,9 @@ func (*ExecLoginResponse) Descriptor() ([]byte, []int) {
 	return file_execs_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ExecLoginResponse) GetString_() bool {
+func (x *ExecLoginResponse) GetStatus() bool {
 	if x != nil {
-		return x.String_
+		return x.Status
 	}
 	return false
 }
@@ -930,7 +930,7 @@ const file_execs_proto_rawDesc = "" +
 	"logged_out\x18\x01 \x01(\bR\tloggedOut\"\x0e\n" +
 	"\fEmptyRequest\"A\n" +
 	"\x11ExecLoginResponse\x12\x16\n" +
-	"\x06string\x18\x01 \x01(\bR\x06string\x12\x14\n" +
+	"\x06status\x18\x01 \x01(\bR\x06status\x12\x14\n" +
 	"\x05token\x18\x02 \x01(\tR\x05token\"J\n" +
 	"\x10ExecLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +

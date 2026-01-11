@@ -5,6 +5,7 @@ import (
 	"errors"
 	"gRPC_school_api/internals/models"
 	"gRPC_school_api/internals/repositories/mongodb"
+	"gRPC_school_api/pkg/utils"
 	pb "gRPC_school_api/proto/gen"
 
 	"google.golang.org/grpc/codes"
@@ -78,5 +79,35 @@ func (s *Server) DeleteExecs(ctx context.Context, req *pb.ExecIDs) (*pb.DeleteEx
 	return &pb.DeleteExecsConfirmation{
 		Status:     "Execs Successfully Deleted",
 		DeletedIds: deletedIds,
+	}, nil
+}
+
+func (s *Server) Login(ctx context.Context, req *pb.ExecLoginRequest) (*pb.ExecLoginResponse, error) {
+	if req.Username == "" || req.Password == "" {
+		return nil, status.Error(codes.Unauthenticated, "Fields of username and password cannot be empty")
+	}
+
+	exec, err := mongodb.GetUserByUserName(ctx, req.GetUsername())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if exec.InactiveStatus {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	err = utils.VerifyPassword(req.GetPassword(), exec.Password)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "Incorrect username/password")
+	}
+
+	token, err := utils.SignToken(exec.Id, exec.Username, exec.Role)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "Could not create the token")
+	}
+
+	return &pb.ExecLoginResponse{
+		Status: true,
+		Token:  token,
 	}, nil
 }

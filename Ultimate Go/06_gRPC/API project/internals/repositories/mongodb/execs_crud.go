@@ -11,6 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -156,4 +157,23 @@ func DeleteExecsFromDB(ctx context.Context, execIdsToDelete []string) ([]string,
 		deletedIds[i] = id.Hex()
 	}
 	return deletedIds, nil
+}
+
+func GetUserByUserName(ctx context.Context, username string) (*models.Exec, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal error")
+	}
+
+	defer client.Disconnect(ctx)
+
+	filter := bson.M{"username": username}
+	var exec models.Exec
+	err = client.Database("School").Collection("execs").FindOne(ctx, filter).Decode(&exec)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, utils.ErrorHandler(err, "Internal error")
+		}
+	}
+	return &exec, nil
 }
