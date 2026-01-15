@@ -141,3 +141,16 @@ func (s *Server) DeactivateUser(ctx context.Context, req *pb.ExecIDs) (*pb.Confi
 		Confirmation: result.ModifiedCount > 0,
 	}, nil
 }
+
+func (s *Server) ForgotPassword(ctx context.Context, req *pb.ForgotPasswordRequest) (*pb.ForgotPasswordResponse, error) {
+	email := req.GetEmail()
+
+	message, err := mongodb.ForgotPasswordDB(ctx, email)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Unable to reset the password")
+	}
+	return &pb.ForgotPasswordResponse{
+		Confirmation: true,
+		Message:      message,
+	}, nil
+}

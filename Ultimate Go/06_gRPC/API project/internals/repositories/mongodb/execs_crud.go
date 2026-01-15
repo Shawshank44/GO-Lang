@@ -2,13 +2,19 @@ package mongodb
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"gRPC_school_api/internals/models"
 	"gRPC_school_api/pkg/utils"
 	pb "gRPC_school_api/proto/gen"
+	"os"
+	"strconv"
 	"time"
 
+	"github.com/go-mail/mail/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -249,4 +255,73 @@ func DeactivateUserInDB(ctx context.Context, ids []string) (*mongo.UpdateResult,
 		return nil, utils.ErrorHandler(err, "Failed to decativate users")
 	}
 	return res, nil
+}
+
+func ForgotPasswordDB(ctx context.Context, email string) (string, error) {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return "", utils.ErrorHandler(err, "Internal server error")
+	}
+	defer client.Disconnect(ctx)
+
+	var exec models.Exec
+	err = client.Database("School").Collection("execs").FindOne(ctx, bson.M{"email": email}).Decode(&exec)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return "", utils.ErrorHandler(err, "Internal server error")
+		}
+		return "", utils.ErrorHandler(err, "Internal server error")
+	}
+
+	tokenbyte := make([]byte, 32)
+	_, err = rand.Read(tokenbyte)
+	if err != nil {
+		return "", utils.ErrorHandler(err, "Internal server error")
+	}
+
+	token := hex.EncodeToString(tokenbyte)
+	hashedToken := sha256.Sum256(tokenbyte)
+	hashedTokenString := hex.EncodeToString(hashedToken[:])
+	duration, err := strconv.Atoi(os.Getenv("RESET_TOKEN_EXP_DURATION"))
+	if err != nil {
+		return "", utils.ErrorHandler(err, "Internal server error")
+	}
+	mins := time.Duration(duration)
+	expiry := time.Now().Add(mins * time.Minute).Format(time.RFC3339)
+
+	update := bson.M{
+		"$set": bson.M{
+			"password_reset_token":   hashedTokenString,
+			"password_token_expires": expiry,
+		},
+	}
+	_, err = client.Database("School").Collection("exec").UpdateOne(ctx, bson.M{"email": email}, update)
+	if err != nil {
+		return "", utils.ErrorHandler(err, "Internal server error")
+	}
+
+	resetURL := fmt.Sprintf("https://localhost:50051/execs/resetpassword/reset/%s", token)
+	message := fmt.Sprintf("forget your password? Reset your password using the following link \n %s\n Please use the reset code :: %s along with your request to change password.\n if you didn't request a password reset, Please ignore this mail,\n This link is only valid for %v minutes.", resetURL, token, mins)
+
+	subject := "**ACTION NEEDED ON PASSWORD RESET Edia.Edu.Admins**"
+
+	m := mail.NewMessage()
+	m.SetHeader("From", "noreply@admins.edia.edu")
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", message)
+
+	d := mail.NewDialer("localhost", 1025, "", "")
+	err = d.DialAndSend(m)
+	if err != nil {
+		clean := bson.M{
+			"$set": bson.M{
+				"password_reset_token":   nil,
+				"password_token_expires": nil,
+			},
+		}
+		_, err = client.Database("School").Collection("exec").UpdateOne(ctx, bson.M{"email": email}, clean)
+		return "", utils.ErrorHandler(err, "Internal server error")
+	}
+	return message, nil
 }
