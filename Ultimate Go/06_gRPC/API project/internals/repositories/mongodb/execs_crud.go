@@ -295,7 +295,7 @@ func ForgotPasswordDB(ctx context.Context, email string) (string, error) {
 			"password_token_expires": expiry,
 		},
 	}
-	_, err = client.Database("School").Collection("exec").UpdateOne(ctx, bson.M{"email": email}, update)
+	_, err = client.Database("School").Collection("execs").UpdateOne(ctx, bson.M{"email": email}, update)
 	if err != nil {
 		return "", utils.ErrorHandler(err, "Internal server error")
 	}
@@ -320,8 +320,46 @@ func ForgotPasswordDB(ctx context.Context, email string) (string, error) {
 				"password_token_expires": nil,
 			},
 		}
-		_, err = client.Database("School").Collection("exec").UpdateOne(ctx, bson.M{"email": email}, clean)
+		_, err = client.Database("School").Collection("execs").UpdateOne(ctx, bson.M{"email": email}, clean)
 		return "", utils.ErrorHandler(err, "Internal server error")
 	}
 	return message, nil
+}
+
+func ResetPasswordDB(ctx context.Context, tokenInDb string, newPassword string) error {
+	client, err := CreateMongoClient()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
+	}
+	defer client.Disconnect(ctx)
+
+	filter := bson.M{
+		"password_reset_token": tokenInDb,
+		"password_token_expires": bson.M{
+			"$gt": time.Now().Format(time.RFC3339),
+		},
+	}
+	var exec models.Exec
+	err = client.Database("School").Collection("execs").FindOne(ctx, filter).Decode(&exec)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
+	}
+
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"password":               hashedPassword,
+			"password_reset_token":   nil,
+			"password_token_expires": nil,
+			"password_changed_at":    time.Now().Format(time.RFC3339),
+		},
+	}
+	_, err = client.Database("School").Collection("execs").UpdateOne(ctx, filter, update)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal error")
+	}
+	return nil
 }
