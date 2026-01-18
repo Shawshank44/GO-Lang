@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"gRPC_school_api/internals/api/handlers"
+	"gRPC_school_api/internals/api/interceptors"
 	"gRPC_school_api/internals/repositories/mongodb"
 	pb "gRPC_school_api/proto/gen"
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -22,7 +24,7 @@ func main() {
 		log.Fatal("error in loading the .env file", err)
 	}
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors.ResponseTimeInterceptors, interceptors.NewRateLimiter(5, time.Minute).RateLimiterInterceptor, interceptors.AuthenticationInterceptor))
 	pb.RegisterTeachersServiceServer(server, &handlers.Server{})
 	pb.RegisterStudentsServiceServer(server, &handlers.Server{})
 	pb.RegisterExecsServiceServer(server, &handlers.Server{})
