@@ -2,6 +2,8 @@ package interceptors
 
 import (
 	"context"
+	"fmt"
+	"gRPC_school_api/pkg/utils"
 	"log"
 	"os"
 	"strings"
@@ -12,8 +14,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
-
-type ContextKey string
 
 func AuthenticationInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	log.Println("Authenticator begins.")
@@ -40,6 +40,10 @@ func AuthenticationInterceptor(ctx context.Context, req interface{}, info *grpc.
 	tokenstr := strings.TrimPrefix(authHeader[0], "Bearer ")
 	tokenstr = strings.TrimSpace(tokenstr)
 
+	ok = utils.JwtStore.IsLoggedOut(tokenstr)
+	if ok {
+		return nil, status.Error(codes.Unauthenticated, "Unauthorized access")
+	}
 	jwtSecret := os.Getenv("JWT_SECRET")
 
 	token, err := jwt.Parse(tokenstr, func(token *jwt.Token) (any, error) {
@@ -67,14 +71,16 @@ func AuthenticationInterceptor(ctx context.Context, req interface{}, info *grpc.
 		return nil, status.Error(codes.Unauthenticated, "Unauthorized")
 	}
 
-	userId := claims["userId"].(string)
+	userId := claims["uid"].(string)
 	user := claims["user"].(string)
-	exp := claims["exp"].(string)
+	expf := claims["exp"].(float64)
+	expI := int64(expf)
+	exp := fmt.Sprintf("%v", expI)
 
-	newCtx := context.WithValue(ctx, ContextKey("role"), role)
-	newCtx = context.WithValue(newCtx, ContextKey("userId"), userId)
-	newCtx = context.WithValue(newCtx, ContextKey("user"), user)
-	newCtx = context.WithValue(newCtx, ContextKey("exp"), exp)
+	newCtx := context.WithValue(ctx, utils.ContextKey("role"), role)
+	newCtx = context.WithValue(newCtx, utils.ContextKey("userId"), userId)
+	newCtx = context.WithValue(newCtx, utils.ContextKey("username"), user)
+	newCtx = context.WithValue(newCtx, utils.ContextKey("expiresAt"), exp)
 
 	log.Println("Authenticator Ends.")
 
