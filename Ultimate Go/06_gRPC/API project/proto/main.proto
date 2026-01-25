@@ -2,6 +2,7 @@ syntax = "proto3";
 
 // import "validate/validate.proto";
 import "students.proto";
+import "validate/validate.proto";
 
 package main;
 
@@ -27,11 +28,11 @@ message DeleteTeachersConfirmation {
 }
 
 message TeacherID {
-    string id = 1;
+    string id = 1 [(validate.rules).string = {min_len: 24, max_len: 24, pattern:"^[a-fA-F0-9]{24}$"}];
 }
 
 message TeacherIDs {
-    repeated TeacherID ids = 1;
+    repeated TeacherID ids = 1 [(validate.rules).repeated = {min_items: 1}];
 }
 
 message GetTeachersRequest {

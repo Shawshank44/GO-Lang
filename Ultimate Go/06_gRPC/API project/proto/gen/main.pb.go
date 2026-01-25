@@ -7,11 +7,13 @@
 package gRPCapipb
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -414,19 +416,19 @@ var File_main_proto protoreflect.FileDescriptor
 const file_main_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"main.proto\x12\x04main\x1a\x0estudents.proto\"K\n" +
+	"main.proto\x12\x04main\x1a\x0estudents.proto\x1a\x17validate/validate.proto\"K\n" +
 	"\fStudentCount\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\bR\x06status\x12#\n" +
 	"\rstudent_count\x18\x02 \x01(\x05R\fstudentCount\"U\n" +
 	"\x1aDeleteTeachersConfirmation\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\x12\x1f\n" +
 	"\vdeleted_ids\x18\x02 \x03(\tR\n" +
-	"deletedIds\"\x1b\n" +
-	"\tTeacherID\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"/\n" +
+	"deletedIds\"9\n" +
+	"\tTeacherID\x12,\n" +
+	"\x02id\x18\x01 \x01(\tB\x1c\xfaB\x19r\x17\x10\x18\x18\x182\x11^[a-fA-F0-9]{24}$R\x02id\"9\n" +
 	"\n" +
-	"TeacherIDs\x12!\n" +
-	"\x03ids\x18\x01 \x03(\v2\x0f.main.TeacherIDR\x03ids\"\xa5\x01\n" +
+	"TeacherIDs\x12+\n" +
+	"\x03ids\x18\x01 \x03(\v2\x0f.main.TeacherIDB\b\xfaB\x05\x92\x01\x02\b\x01R\x03ids\"\xa5\x01\n" +
 	"\x12GetTeachersRequest\x12'\n" +
 	"\ateacher\x18\x01 \x01(\v2\r.main.TeacherR\ateacher\x12(\n" +
 	"\asort_by\x18\x02 \x03(\v2\x0f.main.SortFieldR\x06sortBy\x12\x1f\n" +
@@ -463,18 +465,20 @@ func file_main_proto_rawDescGZIP() []byte {
 	return file_main_proto_rawDescData
 }
 
-var file_main_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_main_proto_goTypes = []any{
-	(*StudentCount)(nil),               // 0: main.StudentCount
-	(*DeleteTeachersConfirmation)(nil), // 1: main.DeleteTeachersConfirmation
-	(*TeacherID)(nil),                  // 2: main.TeacherID
-	(*TeacherIDs)(nil),                 // 3: main.TeacherIDs
-	(*GetTeachersRequest)(nil),         // 4: main.GetTeachersRequest
-	(*Teacher)(nil),                    // 5: main.Teacher
-	(*Teachers)(nil),                   // 6: main.Teachers
-	(*SortField)(nil),                  // 7: main.SortField
-	(*Students)(nil),                   // 8: main.Students
-}
+var (
+	file_main_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+	file_main_proto_goTypes  = []any{
+		(*StudentCount)(nil),               // 0: main.StudentCount
+		(*DeleteTeachersConfirmation)(nil), // 1: main.DeleteTeachersConfirmation
+		(*TeacherID)(nil),                  // 2: main.TeacherID
+		(*TeacherIDs)(nil),                 // 3: main.TeacherIDs
+		(*GetTeachersRequest)(nil),         // 4: main.GetTeachersRequest
+		(*Teacher)(nil),                    // 5: main.Teacher
+		(*Teachers)(nil),                   // 6: main.Teachers
+		(*SortField)(nil),                  // 7: main.SortField
+		(*Students)(nil),                   // 8: main.Students
+	}
+)
 var file_main_proto_depIdxs = []int32{
 	2,  // 0: main.TeacherIDs.ids:type_name -> main.TeacherID
 	5,  // 1: main.GetTeachersRequest.teacher:type_name -> main.Teacher

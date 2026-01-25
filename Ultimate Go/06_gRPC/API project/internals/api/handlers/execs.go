@@ -33,6 +33,16 @@ func (s *Server) AddExecs(ctx context.Context, req *pb.Execs) (*pb.Execs, error)
 }
 
 func (s *Server) GetExecs(ctx context.Context, req *pb.GetExecsRequest) (*pb.Execs, error) {
+	err := req.Validate() // Using PROTOC GEN Validate
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = utils.AuthorizeUser(ctx, "superuser", "admin")
+	if err != nil {
+		return nil, utils.ErrorHandler(err, err.Error())
+	}
+
 	// Getting the filters from the request
 	filter, err := BuildFilter(req.Exec, &models.Exec{})
 	if err != nil {
