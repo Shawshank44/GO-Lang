@@ -1,0 +1,28 @@
+blog-api/
+├── cmd/
+│   └── server/
+│       └── main.go
+├── internal/
+│   ├── auth/
+│   │   ├── jwt.go
+│   │   └── password.go
+│   ├── config/
+│   │   └── config.go
+│   ├── db/
+│   │   └── postgres.go
+│   ├── models/
+│   │   ├── user.go
+│   │   └── post.go
+│   ├── repository/
+│   │   ├── user_repo.go
+│   │   └── post_repo.go
+│   ├── service/
+│   │   ├── auth_service.go
+│   │   └── post_service.go
+│   ├── handler/
+│   │   ├── auth_handler.go
+│   │   └── post_handler.go
+│   └── middleware/
+│       ├── auth.go
+│       └── role.go
+├── go.mod
