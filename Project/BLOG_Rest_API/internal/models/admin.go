@@ -2,7 +2,7 @@ package models
 
 import "database/sql"
 
-type User struct {
+type Admin struct {
 	ID                int            `json:"id,omitempty" db:"id,omitempty"`
 	Username          string         `json:"username,omitempty" db:"username,omitempty"`
 	Email             string         `json:"email,omitempty" db:"email,omitempty"`
@@ -12,9 +12,10 @@ type User struct {
 	PasswordOTP       sql.NullString `json:"password_otp,omitempty" db:"password_otp,omitempty"`
 	OtpExpires        sql.NullString `json:"otp_expires,omitempty" db:"otp_expires,omitempty"`
 	InactiveStatus    bool           `json:"inactive_status,omitempty" db:"inactive_status,omitempty"`
+	Role              string         `json:"role,omitempty" db:"role,omitempty"`
 }
 
-type UpdatePasswordRequest struct {
+type AdminUpdatePasswordRequest struct {
 	CurrentPassword string `json:"current_password,omitempty" db:"current_password,omitempty"`
 	NewPassword     string `json:"new_password,omitempty" db:"new_password,omitempty"`
 }
