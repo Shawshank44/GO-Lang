@@ -1,6 +1,7 @@
 package router
 
 import (
+	users "blog_rest_api/internal/handlers/Users"
 	"fmt"
 	"net/http"
 )
@@ -16,9 +17,7 @@ func UsersRouter() *http.ServeMux {
 		fmt.Fprintln(w, "Welcome to users by id page.", r.PathValue("id"))
 	})
 	// Create
-	mux.HandleFunc("POST /users/register", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to user register page"))
-	})
+	mux.HandleFunc("POST /users/register", users.RegisterUser)
 	mux.HandleFunc("POST /users/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to login page"))
 	})
