@@ -11,9 +11,7 @@ func UsersRouter() *http.ServeMux {
 
 	// Read
 	mux.HandleFunc("GET /getusers", users.GetUsers)
-	mux.HandleFunc("GET /getusers/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to users by id page.", r.PathValue("id"))
-	})
+	mux.HandleFunc("GET /getusers/{id}", users.GetUserByID)
 	// Create
 	mux.HandleFunc("POST /users/register", users.RegisterUser)
 	mux.HandleFunc("POST /users/login", func(w http.ResponseWriter, r *http.Request) {

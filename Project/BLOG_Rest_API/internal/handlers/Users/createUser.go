@@ -21,6 +21,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Username == "" || req.Email == "" || req.Password == "" {
 		http.Error(w, "Fields cannot be blank", http.StatusBadRequest)
+		return
 	}
 
 	exists, err := repositories.EmailExists(r.Context(), req)
@@ -31,6 +32,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	if exists {
 		http.Error(w, "email already exists.", http.StatusConflict)
+		return
 	}
 
 	userID, err := repositories.RegisterUserToDB(r.Context(), req)
