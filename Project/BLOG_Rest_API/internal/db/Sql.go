@@ -13,8 +13,8 @@ func ConnectDB() (*sql.DB, error) {
 	}
 	fmt.Println("Connecting to the database.....")
 
-	connection_URL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", cfg.DB_USER, cfg.DB_PASSWORD, cfg.HOST, cfg.DB_PORT, cfg.DB_NAME)
-	db, err := sql.Open("mysql", connection_URL)
+	connectionURL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", cfg.DB_USER, cfg.DB_PASSWORD, cfg.HOST, cfg.DB_PORT, cfg.DB_NAME)
+	db, err := sql.Open("mysql", connectionURL)
 	if err != nil {
 		return nil, err
 	}

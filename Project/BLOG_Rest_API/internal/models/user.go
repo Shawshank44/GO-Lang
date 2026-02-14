@@ -27,3 +27,12 @@ type UserResponse struct {
 	PasswordChangedAT *string `json:"password_changed_at,omitempty" db:"password_changed_at,omitempty"`
 	InactiveStatus    bool    `json:"inactive_status," db:"inactive_status,"`
 }
+
+type UserUpdateDetail struct {
+	Email string `json:"email,omitempty" db:"email,omitempty"`
+}
+
+type ConfirmDetail struct {
+	Otp   string `json:"otp,omitempty" db:"otp,omitempty"`
+	Email string `json:"email,omitempty" db:"email,omitempty"`
+}

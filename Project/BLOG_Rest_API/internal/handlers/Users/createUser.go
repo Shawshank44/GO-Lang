@@ -24,7 +24,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := repositories.EmailExists(r.Context(), req)
+	exists, err := repositories.EmailExists(r.Context(), req.Email)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return

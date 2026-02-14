@@ -2,7 +2,6 @@ package router
 
 import (
 	users "blog_rest_api/internal/handlers/Users"
-	"fmt"
 	"net/http"
 )
 
@@ -21,10 +20,9 @@ func UsersRouter() *http.ServeMux {
 		w.Write([]byte("Welcome to logout page"))
 	})
 
-	//Update
-	mux.HandleFunc("PATCH /updateusers/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to update users by id", r.PathValue("id"))
-	})
+	//Update email :
+	mux.HandleFunc("POST /users/updatedetail/{id}", users.UpdateDetail)
+	mux.HandleFunc("POST /users/confirmdetail/{id}", users.Confirmdetail)
 
 	// Delete
 	mux.HandleFunc("DELETE /users/deactivate", func(w http.ResponseWriter, r *http.Request) {
