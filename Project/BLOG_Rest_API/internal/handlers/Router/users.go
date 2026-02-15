@@ -13,12 +13,8 @@ func UsersRouter() *http.ServeMux {
 	mux.HandleFunc("GET /getusers/{id}", users.GetUserByID)
 	// Create
 	mux.HandleFunc("POST /users/register", users.RegisterUser)
-	mux.HandleFunc("POST /users/login", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to login page"))
-	})
-	mux.HandleFunc("POST /users/logout", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to logout page"))
-	})
+	mux.HandleFunc("POST /users/login", users.Login)
+	mux.HandleFunc("POST /users/logout", users.Logout)
 
 	//Update email :
 	mux.HandleFunc("POST /users/updatedetail/{id}", users.UpdateDetail)

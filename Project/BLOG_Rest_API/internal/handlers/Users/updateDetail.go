@@ -72,6 +72,7 @@ func UpdateDetail(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Message: fmt.Sprintf("Email change request has been shared to %s", req.Email),
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -129,6 +130,6 @@ func Confirmdetail(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Message: fmt.Sprintf("email addess has been updated to %s", req.Email),
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&res)
 }

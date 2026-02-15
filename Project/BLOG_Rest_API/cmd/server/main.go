@@ -4,6 +4,7 @@ import (
 	"blog_rest_api/internal/config"
 	"blog_rest_api/internal/db"
 	router "blog_rest_api/internal/handlers/Router"
+	"blog_rest_api/internal/middlewares"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,9 +24,16 @@ func main() {
 	}
 
 	routers := router.MainRouter()
+	jwtMiddlewares := middlewares.MiddleWaresExcludeRoutes(middlewares.JWTMiddleware, "/users/register", "/users/login", "/users/forgotpassword", "/users/resetpassword")
+	securemux := middlewares.ApplyMiddleWares(routers, jwtMiddlewares)
+
+	server := &http.Server{
+		Addr:    cfg.API_PORT,
+		Handler: securemux,
+	}
 
 	fmt.Printf("Server successfully created on http://localhost%s", cfg.API_PORT)
-	err = http.ListenAndServe(cfg.API_PORT, routers)
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
