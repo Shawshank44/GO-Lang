@@ -28,6 +28,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 		cfg, err := config.Load()
 		if err != nil {
 			http.Error(w, "unable to configure", http.StatusInternalServerError)
+			return
 		}
 
 		token, err := r.Cookie("Bearer")
@@ -63,6 +64,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 		} else {
 			http.Error(w, "Invalid login token", http.StatusUnauthorized)
 			log.Println("Invalid JWT : ", token.Value)
+			return
 		}
 
 		claims, ok := parsedToken.Claims.(jwt.MapClaims)

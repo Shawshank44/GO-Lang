@@ -3,6 +3,7 @@ package users
 import (
 	"blog_rest_api/internal/models"
 	repositories "blog_rest_api/internal/repositories/Users_SQL"
+	"blog_rest_api/internal/services"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -23,7 +24,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		Count  int
 		Data   []models.UserResponse
 	}{
-		Status: "Sucess",
+		Status: "Success",
 		Count:  len(userList),
 		Data:   userList,
 	}
@@ -40,6 +41,17 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idstr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	authID, err := services.UserAuthService(r.Context(), r)
+	if err != nil {
+		http.Error(w, "Unable to get the user Id from JWT", http.StatusUnauthorized)
+		return
+	}
+
+	if idstr != authID {
+		http.Error(w, "Unauthorized user", http.StatusUnauthorized)
 		return
 	}
 

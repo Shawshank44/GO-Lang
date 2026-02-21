@@ -5,6 +5,7 @@ import (
 	repositories "blog_rest_api/internal/repositories/Users_SQL"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
-	if req.Username == "" || req.Email == "" || req.Password == "" {
+	if strings.TrimSpace(req.Username) == "" || strings.TrimSpace(req.Email) == "" || strings.TrimSpace(req.Password) == "" {
 		http.Error(w, "Fields cannot be blank", http.StatusBadRequest)
 		return
 	}

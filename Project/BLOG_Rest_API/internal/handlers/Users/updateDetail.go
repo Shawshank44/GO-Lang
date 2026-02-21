@@ -3,6 +3,7 @@ package users
 import (
 	"blog_rest_api/internal/models"
 	repositories "blog_rest_api/internal/repositories/Users_SQL"
+	"blog_rest_api/internal/services"
 	"blog_rest_api/pkg/utils"
 	"encoding/json"
 	"fmt"
@@ -21,6 +22,17 @@ func UpdateDetail(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	authID, err := services.UserAuthService(r.Context(), r)
+	if err != nil {
+		http.Error(w, "Unable to get the user Id from JWT", http.StatusUnauthorized)
+		return
+	}
+
+	if idStr != authID {
+		http.Error(w, "Unauthorized user", http.StatusUnauthorized)
 		return
 	}
 
@@ -86,6 +98,17 @@ func Confirmdetail(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	authID, err := services.UserAuthService(r.Context(), r)
+	if err != nil {
+		http.Error(w, "Unable to get the user Id from JWT", http.StatusUnauthorized)
+		return
+	}
+
+	if idStr != authID {
+		http.Error(w, "Unauthorized user", http.StatusUnauthorized)
 		return
 	}
 
