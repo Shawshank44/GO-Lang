@@ -35,6 +35,7 @@ func DeactivateUser(w http.ResponseWriter, r *http.Request) {
 	err = repositories.DeactivateUserFromDB(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Unable to Deactivate user fromDB", http.StatusInternalServerError)
+		return
 	}
 
 	http.SetCookie(w, &http.Cookie{

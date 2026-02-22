@@ -15,8 +15,8 @@ type User struct {
 }
 
 type UpdatePasswordRequest struct {
-	CurrentPassword string `json:"current_password,omitempty" db:"current_password,omitempty"`
-	NewPassword     string `json:"new_password,omitempty" db:"new_password,omitempty"`
+	Otp         string `json:"otp,omitempty" db:"otp,omitempty"`
+	NewPassword string `json:"new_password,omitempty" db:"new_password,omitempty"`
 }
 
 type UserResponse struct {

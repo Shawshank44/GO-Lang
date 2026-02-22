@@ -24,13 +24,9 @@ func UsersRouter() *http.ServeMux {
 	mux.HandleFunc("DELETE /users/deactivate/{id}", users.DeactivateUser)
 
 	// MISCs:
-	mux.HandleFunc("POST /users/forgotpassword", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to forgot password page"))
-	})
+	mux.HandleFunc("POST /users/forgotpassword", users.ForgotPassword)
 
-	mux.HandleFunc("POST /users/resetpassword", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to resetpassword page"))
-	})
+	mux.HandleFunc("POST /users/resetpassword", users.ResetPassword)
 
 	return mux
 }

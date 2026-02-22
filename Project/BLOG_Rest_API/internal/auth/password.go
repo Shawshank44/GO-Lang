@@ -66,3 +66,35 @@ func VerifyPassword(password, encodedHash string) error {
 
 	return utils.ErrorHandler(errors.New("invalid password"), "invalid password")
 }
+
+func IsSameAsOldPassword(password, encodedHash string) (bool, error) {
+	parts := strings.Split(encodedHash, "$")
+	if len(parts) != 2 {
+		return false, errors.New("invalid encoded hash format")
+	}
+
+	saltBytes, err := base64.RawStdEncoding.DecodeString(parts[0])
+	if err != nil {
+		return false, err
+	}
+
+	hashBytes, err := base64.RawStdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return false, err
+	}
+
+	hash := argon2.IDKey(
+		[]byte(password),
+		saltBytes,
+		iterations,
+		memory,
+		parallelism,
+		keyLength,
+	)
+
+	if len(hash) != len(hashBytes) {
+		return false, errors.New("hash length mismatch")
+	}
+
+	return subtle.ConstantTimeCompare(hash, hashBytes) == 1, nil
+}

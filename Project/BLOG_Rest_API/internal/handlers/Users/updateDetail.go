@@ -3,6 +3,7 @@ package users
 import (
 	"blog_rest_api/internal/models"
 	repositories "blog_rest_api/internal/repositories/Users_SQL"
+	utilssql "blog_rest_api/internal/repositories/Utils_SQL"
 	"blog_rest_api/internal/services"
 	"blog_rest_api/pkg/utils"
 	"encoding/json"
@@ -48,13 +49,7 @@ func UpdateDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	otp, err := utils.GenerateOTP(6)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	exists, err := repositories.EmailExists(r.Context(), req.Email)
+	exists, err := utilssql.EmailExists(r.Context(), req.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -62,6 +57,12 @@ func UpdateDetail(w http.ResponseWriter, r *http.Request) {
 
 	if exists {
 		http.Error(w, "email already exists.", http.StatusConflict)
+		return
+	}
+
+	otp, err := utils.GenerateOTP(6)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -129,7 +130,7 @@ func Confirmdetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := repositories.EmailExists(r.Context(), req.Email)
+	exists, err := utilssql.EmailExists(r.Context(), req.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -3,6 +3,7 @@ package users
 import (
 	"blog_rest_api/internal/models"
 	repositories "blog_rest_api/internal/repositories/Users_SQL"
+	utilssql "blog_rest_api/internal/repositories/Utils_SQL"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -25,7 +26,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := repositories.EmailExists(r.Context(), req.Email)
+	exists, err := utilssql.EmailExists(r.Context(), req.Email)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
