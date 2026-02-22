@@ -1,10 +1,9 @@
 package users
 
 import (
-	"blog_rest_api/internal/db"
+	repositories "blog_rest_api/internal/repositories/Users_SQL"
 	"blog_rest_api/internal/services"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,30 +32,9 @@ func DeactivateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := db.ConnectDB()
+	err = repositories.DeactivateUserFromDB(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	defer db.Close()
-
-	res, err := db.ExecContext(r.Context(), "DELETE FROM users WHERE id = ?", id)
-	if err != nil {
-		http.Error(w, "Error in deleting user from database", http.StatusInternalServerError)
-		return
-	}
-	fmt.Println(res.RowsAffected())
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if rowsAffected == 0 {
-		http.Error(w, "rows affected 0", http.StatusInternalServerError)
-		return
+		http.Error(w, "Unable to Deactivate user fromDB", http.StatusInternalServerError)
 	}
 
 	http.SetCookie(w, &http.Cookie{
