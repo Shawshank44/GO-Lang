@@ -14,6 +14,13 @@ import (
 
 type ContextKey string
 
+const (
+	UserIDKey   ContextKey = "userId"
+	RoleKey     ContextKey = "role"
+	UsernameKey ContextKey = "username"
+	Expiry      ContextKey = "expiresAt"
+)
+
 func AuthorizeUser(userRole string, allowedRoles ...string) (bool, error) {
 	for _, allowedRole := range allowedRoles {
 		if userRole == allowedRole {
@@ -74,10 +81,10 @@ func JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ContextKey("role"), claims["role"])
-		ctx = context.WithValue(ctx, ContextKey("expiresAt"), claims["exp"])
-		ctx = context.WithValue(ctx, ContextKey("username"), claims["user"])
-		ctx = context.WithValue(ctx, ContextKey("userId"), claims["uid"])
+		ctx := context.WithValue(r.Context(), ContextKey(RoleKey), claims["role"])
+		ctx = context.WithValue(ctx, ContextKey(Expiry), claims["exp"])
+		ctx = context.WithValue(ctx, ContextKey(UsernameKey), claims["user"])
+		ctx = context.WithValue(ctx, ContextKey(UserIDKey), claims["uid"])
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

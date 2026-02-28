@@ -1,12 +1,16 @@
 package router
 
 import (
+	blogposts "blog_rest_api/internal/handlers/BlogPosts"
 	"fmt"
 	"net/http"
 )
 
 func PostsRouter() *http.ServeMux {
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("POST /assets/uploads/", blogposts.Uploader)
+	mux.Handle("/assets/uploads/", http.StripPrefix("/assets/uploads/", http.FileServer(http.Dir(`C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\uploads`))))
 
 	mux.HandleFunc("GET /getposts", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to Posts page"))
