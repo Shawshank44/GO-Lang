@@ -9,8 +9,10 @@ import (
 func PostsRouter() *http.ServeMux {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("POST /session/create", blogposts.CreateSession)
+
 	mux.HandleFunc("POST /assets/uploads/", blogposts.Uploader)
-	mux.Handle("/assets/uploads/", http.StripPrefix("/assets/uploads/", http.FileServer(http.Dir(`C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\uploads`))))
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(`C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\server\uploads\`))))
 
 	mux.HandleFunc("GET /getposts", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to Posts page"))
@@ -19,9 +21,7 @@ func PostsRouter() *http.ServeMux {
 		fmt.Fprintln(w, "Welcome to get post by id", r.PathValue("id"))
 	})
 
-	mux.HandleFunc("POST /createpost", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to create post page"))
-	})
+	mux.HandleFunc("POST /createpost", blogposts.CreatePost)
 
 	mux.HandleFunc("PATCH /updateposts", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to update posts page"))

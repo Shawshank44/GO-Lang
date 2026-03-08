@@ -6,7 +6,7 @@ import (
 	"context"
 )
 
-func UploadToDB(ctx context.Context, userId int, fileURL, contentType string) error {
+func UploadToDB(ctx context.Context, sessionID string, fileURL string) error {
 	db, err := db.ConnectDB()
 	if err != nil {
 		return utils.ErrorHandler(err, "Internal server error")
@@ -14,7 +14,7 @@ func UploadToDB(ctx context.Context, userId int, fileURL, contentType string) er
 
 	defer db.Close()
 
-	_, err = db.ExecContext(ctx, "INSERT INTO assets (user_id, file_url, file_type) VALUES (?, ?, ?)", userId, fileURL, contentType)
+	_, err = db.ExecContext(ctx, "INSERT INTO uploads(file_path,session_id) VALUES(?,?)", fileURL, sessionID)
 	if err != nil {
 		return utils.ErrorHandler(err, "Insertion failed Internal server error")
 	}

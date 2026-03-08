@@ -2,14 +2,15 @@ package blogposts
 
 import (
 	repositories "blog_rest_api/internal/repositories/Post_SQL"
-	"blog_rest_api/internal/services"
+	utilssql "blog_rest_api/internal/repositories/Utils_SQL"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func isAllowedType(contentType string) bool {
@@ -22,29 +23,34 @@ func isAllowedType(contentType string) bool {
 	return allowed[contentType]
 }
 
+func CreateSession(w http.ResponseWriter, r *http.Request) {
+	sessionID := uuid.New().String()
+
+	err := utilssql.CreateSessionInDB(r.Context(), sessionID)
+	if err != nil {
+		http.Error(w, "Internal server error unable to create session", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"session_id": sessionID,
+	})
+}
+
 func Uploader(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
+	sessionID := r.URL.Query().Get("session_id")
+
 	r.Body = http.MaxBytesReader(w, r.Body, 50<<20) // 50 MB
 
 	err := r.ParseMultipartForm(50 << 20)
 	if err != nil {
 		http.Error(w, "File is too large for upload", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := services.UserAuthService(r.Context(), r)
-	if err != nil {
-		http.Error(w, "Unable to fetch the user ID", http.StatusBadGateway)
-		return
-	}
-
-	id, err := strconv.Atoi(userID)
-	if err != nil {
-		http.Error(w, "Unable to convert the userId", http.StatusBadRequest)
 		return
 	}
 
@@ -77,7 +83,7 @@ func Uploader(w http.ResponseWriter, r *http.Request) {
 
 	fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
 
-	uploadPath := `C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\uploads\` + fileName
+	uploadPath := `C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\server\uploads\` + fileName
 
 	dst, err := os.Create(uploadPath)
 	if err != nil {
@@ -92,9 +98,9 @@ func Uploader(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileURL := "http://localhost:8080/assets/uploads/" + fileName
+	fileURL := "/uploads/" + fileName
 
-	err = repositories.UploadToDB(r.Context(), id, fileURL, contentType)
+	err = repositories.UploadToDB(r.Context(), sessionID, fileURL)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
