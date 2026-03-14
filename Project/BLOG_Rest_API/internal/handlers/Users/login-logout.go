@@ -66,9 +66,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	res := struct {
-		Token string `json:"token"`
+		UserID int
+		Token  string `json:"token"`
 	}{
-		Token: tokenString,
+		UserID: user.ID,
+		Token:  tokenString,
 	}
 
 	json.NewEncoder(w).Encode(res)

@@ -1,6 +1,8 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Post struct {
 	ID        int             `json:"id,omitempty" db:"id,omitempty"`
@@ -9,4 +11,5 @@ type Post struct {
 	Content   json.RawMessage `json:"content,omitempty" db:"content,omitempty"`
 	Tags      []string        `json:"tags,omitempty" db:"tags,omitempty"`
 	CreatedAt string          `json:"created_at,omitempty" db:"created_at,omitempty"`
+	UpdatedAt *string         `json:"updated_at,omitempty" db:"updated_at,omitempty"`
 }

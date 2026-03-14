@@ -14,12 +14,9 @@ func PostsRouter() *http.ServeMux {
 	mux.HandleFunc("POST /assets/uploads/", blogposts.Uploader)
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(`C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\server\uploads\`))))
 
-	mux.HandleFunc("GET /getposts", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to Posts page"))
-	})
-	mux.HandleFunc("GET /getpost/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to get post by id", r.PathValue("id"))
-	})
+	mux.HandleFunc("GET /getposts", blogposts.GetPosts)
+	mux.HandleFunc("GET /myposts", blogposts.MyPosts)
+	mux.HandleFunc("GET /getpost/{id}", blogposts.GetPost)
 
 	mux.HandleFunc("POST /createpost", blogposts.CreatePost)
 

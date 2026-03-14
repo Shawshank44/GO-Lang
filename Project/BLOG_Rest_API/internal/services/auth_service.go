@@ -2,6 +2,7 @@ package services
 
 import (
 	"blog_rest_api/internal/config"
+	"blog_rest_api/internal/middlewares"
 	"blog_rest_api/pkg/utils"
 	"context"
 	"errors"
@@ -49,4 +50,31 @@ func UserAuthService(ctx context.Context, r *http.Request) (string, error) {
 
 	return authID, nil
 
+}
+
+func AuthUser(r *http.Request, field string) (interface{}, error) {
+	switch field {
+	case "id":
+		id, ok := r.Context().Value(middlewares.UserIDKey).(float64)
+		if !ok {
+			return 0, utils.ErrorHandler(errors.New("unable to get the ID from JWT"), "Unable to get the ID from JWT")
+		} else {
+			return int(id), nil
+		}
+	case "username":
+		username, ok := r.Context().Value(middlewares.UsernameKey).(string)
+		if !ok {
+			return 0, utils.ErrorHandler(errors.New("unable to get the username from JWT"), "Unable to get the ID from JWT")
+		} else {
+			return username, nil
+		}
+	case "role":
+		role, ok := r.Context().Value(middlewares.RoleKey).(string)
+		if !ok {
+			return 0, utils.ErrorHandler(errors.New("unable to get the role from JWT"), "Unable to get the ID from JWT")
+		} else {
+			return role, nil
+		}
+	}
+	return nil, utils.ErrorHandler(errors.New("invalid JWT field request"), "Invalid JWT field request")
 }
