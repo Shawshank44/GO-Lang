@@ -43,13 +43,17 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = utilssql.FinalizeSessionUploads(r.Context(), sessionID)
+	if err != nil {
+		http.Error(w, "Unable to finalise the uploads", http.StatusBadRequest)
+		return
+	}
+
 	err = repositories.CreatePostInDB(r.Context(), username, post.Title, content, tags)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	utilssql.FinalizeSessionUploads(r.Context(), sessionID)
 
 	w.Header().Set("Content-Type", "application/json")
 	res := struct {

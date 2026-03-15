@@ -2,7 +2,6 @@ package router
 
 import (
 	blogposts "blog_rest_api/internal/handlers/BlogPosts"
-	"fmt"
 	"net/http"
 )
 
@@ -20,12 +19,7 @@ func PostsRouter() *http.ServeMux {
 
 	mux.HandleFunc("POST /createpost", blogposts.CreatePost)
 
-	mux.HandleFunc("PATCH /updateposts", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to update posts page"))
-	})
-	mux.HandleFunc("PATCH /updatepost/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to Update post by ID page", r.PathValue("id"))
-	})
+	mux.HandleFunc("PATCH /updatepost", blogposts.UpdatePost)
 
 	mux.HandleFunc("DELETE /deleteposts", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to delete post page"))

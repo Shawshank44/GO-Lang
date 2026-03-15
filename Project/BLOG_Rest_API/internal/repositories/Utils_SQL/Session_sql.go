@@ -34,5 +34,10 @@ func FinalizeSessionUploads(ctx context.Context, sessionID string) error {
 		return utils.ErrorHandler(err, "Internal server error unable to query session.")
 	}
 
+	_, err = db.ExecContext(ctx, "DELETE FROM upload_sessions WHERE id = ?", sessionID)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error unable to query session.")
+	}
+
 	return nil
 }
