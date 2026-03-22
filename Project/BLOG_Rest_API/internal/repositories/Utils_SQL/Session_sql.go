@@ -21,6 +21,23 @@ func CreateSessionInDB(ctx context.Context, sessionID string) error {
 	return nil
 }
 
+func ValidateSession(ctx context.Context, sessionID string) (bool, error) {
+	db, err := db.ConnectDB()
+	if err != nil {
+		return false, utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	query := `SELECT EXISTS (SELECT 1 FROM upload_sessions WHERE id = ?)`
+
+	var exists bool
+
+	err = db.QueryRowContext(ctx, query, sessionID).Scan(&exists)
+
+	return exists, err
+}
+
 func FinalizeSessionUploads(ctx context.Context, sessionID string) error {
 	db, err := db.ConnectDB()
 	if err != nil {

@@ -26,15 +26,26 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utilssql.FinalizeSessionUploads(r.Context(), sessionID)
+	exists, err := utilssql.ValidateSession(r.Context(), sessionID)
 	if err != nil {
-		http.Error(w, "Unable to finalize uploads", http.StatusInternalServerError)
+		http.Error(w, "unable to find the session id", http.StatusInternalServerError)
 		return
 	}
 
-	err = repositories.UpdatePostInDB(r.Context(), &newPost, id)
-	if err != nil {
-		http.Error(w, "Unable to update the post", http.StatusInternalServerError)
+	if exists {
+		err = repositories.UpdatePostInDB(r.Context(), &newPost, id)
+		if err != nil {
+			http.Error(w, "Unable to update the post", http.StatusInternalServerError)
+			return
+		}
+
+		err = utilssql.FinalizeSessionUploads(r.Context(), sessionID)
+		if err != nil {
+			http.Error(w, "Unable to finalize uploads", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		http.Error(w, "Invalid session", http.StatusForbidden)
 		return
 	}
 

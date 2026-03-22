@@ -46,63 +46,76 @@ func Uploader(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := r.URL.Query().Get("session_id")
 
-	r.Body = http.MaxBytesReader(w, r.Body, 50<<20) // 50 MB
+	var fileURL string
 
-	err := r.ParseMultipartForm(50 << 20)
+	exists, err := utilssql.ValidateSession(r.Context(), sessionID)
 	if err != nil {
-		http.Error(w, "File is too large for upload", http.StatusBadRequest)
+		http.Error(w, "Unable to find the session", http.StatusInternalServerError)
 		return
 	}
 
-	file, header, err := r.FormFile("file")
-	if err != nil {
-		http.Error(w, "Invalid file", http.StatusBadRequest)
-		return
-	}
+	if exists {
+		r.Body = http.MaxBytesReader(w, r.Body, 50<<20) // 50 MB
 
-	defer file.Close()
+		err = r.ParseMultipartForm(50 << 20)
+		if err != nil {
+			http.Error(w, "File is too large for upload", http.StatusBadRequest)
+			return
+		}
 
-	buffer := make([]byte, 512)
-	_, err = file.Read(buffer)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, "Invalid file", http.StatusBadRequest)
+			return
+		}
 
-	contentType := http.DetectContentType(buffer)
-	if !isAllowedType(contentType) {
-		http.Error(w, "Unsupported file type", http.StatusBadRequest)
-		return
-	}
+		defer file.Close()
 
-	_, err = file.Seek(0, io.SeekStart)
-	if err != nil {
-		http.Error(w, "unable to seek", http.StatusBadRequest)
-		return
-	}
+		buffer := make([]byte, 512)
+		_, err = file.Read(buffer)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
+		contentType := http.DetectContentType(buffer)
+		if !isAllowedType(contentType) {
+			http.Error(w, "Unsupported file type", http.StatusBadRequest)
+			return
+		}
 
-	uploadPath := `C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\server\uploads\` + fileName
+		_, err = file.Seek(0, io.SeekStart)
+		if err != nil {
+			http.Error(w, "unable to seek", http.StatusBadRequest)
+			return
+		}
 
-	dst, err := os.Create(uploadPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
+		fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
 
-	_, err = io.Copy(dst, file)
-	if err != nil {
-		http.Error(w, "Save failed ", http.StatusInternalServerError)
-		return
-	}
+		uploadPath := `C:\Users\Shashank.BR\OneDrive\Desktop\Go programing\Project\BLOG_Rest_API\cmd\server\uploads\` + fileName
 
-	fileURL := "/uploads/" + fileName
+		dst, err := os.Create(uploadPath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
 
-	err = repositories.UploadToDB(r.Context(), sessionID, fileURL)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			http.Error(w, "Save failed ", http.StatusInternalServerError)
+			return
+		}
+
+		fileURL = "/uploads/" + fileName
+
+		err = repositories.UploadToDB(r.Context(), sessionID, fileURL)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		http.Error(w, "Invalid session", http.StatusForbidden)
 		return
 	}
 

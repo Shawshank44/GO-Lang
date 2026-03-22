@@ -43,15 +43,26 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utilssql.FinalizeSessionUploads(r.Context(), sessionID)
+	exists, err := utilssql.ValidateSession(r.Context(), sessionID)
 	if err != nil {
-		http.Error(w, "Unable to finalise the uploads", http.StatusBadRequest)
+		http.Error(w, "Unable to find the session", http.StatusInternalServerError)
 		return
 	}
 
-	err = repositories.CreatePostInDB(r.Context(), username, post.Title, content, tags)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if exists {
+		err = repositories.CreatePostInDB(r.Context(), username, post.Title, content, tags)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = utilssql.FinalizeSessionUploads(r.Context(), sessionID)
+		if err != nil {
+			http.Error(w, "Unable to finalise the uploads", http.StatusBadRequest)
+			return
+		}
+	} else {
+		http.Error(w, "Inavlid Session", http.StatusForbidden)
 		return
 	}
 
