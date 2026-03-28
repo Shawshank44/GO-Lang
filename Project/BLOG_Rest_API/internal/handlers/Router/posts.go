@@ -21,13 +21,7 @@ func PostsRouter() *http.ServeMux {
 
 	mux.HandleFunc("PATCH /updatepost", blogposts.UpdatePost)
 
-	mux.HandleFunc("DELETE /deleteposts", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to delete post page"))
-	})
-
-	mux.HandleFunc("DELETE /deletepost/{id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to delete post by ID page"))
-	})
+	mux.HandleFunc("DELETE /deletepost", blogposts.DeletePost)
 
 	return mux
 }

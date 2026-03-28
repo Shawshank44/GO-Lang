@@ -68,11 +68,6 @@ func UpdatePostInDB(ctx context.Context, post *models.Post, id int) error {
 		return utils.ErrorHandler(err, "Inavalid old content")
 	}
 
-	err = json.Unmarshal(oldContentJSON, &oldContent)
-	if err != nil {
-		return utils.ErrorHandler(err, "Inavalid old content")
-	}
-
 	err = json.Unmarshal(post.Content, &newcontent)
 	if err != nil {
 		return utils.ErrorHandler(err, "Invalid new content")
