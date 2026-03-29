@@ -5,6 +5,7 @@ import (
 	"blog_rest_api/internal/db"
 	router "blog_rest_api/internal/handlers/Router"
 	"blog_rest_api/internal/middlewares"
+	"blog_rest_api/internal/services"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,6 +23,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	go func() {
+		err := services.StartCleaner()
+		if err != nil {
+			log.Fatal("Unable to clean the uploads")
+		}
+	}()
 
 	routers := router.MainRouter()
 	jwtMiddlewares := middlewares.MiddleWaresExcludeRoutes(middlewares.JWTMiddleware, "/users/register", "/users/login", "/users/forgotpassword", "/users/resetpassword")
