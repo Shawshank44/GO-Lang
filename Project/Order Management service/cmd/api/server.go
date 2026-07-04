@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"order_mgt/Internal/api/middlewares"
+	"order_mgt/Internal/api/router"
 	"os"
 
 	"github.com/joho/godotenv"
 )
-
-func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello Order management")
-}
 
 func main() {
 	err := godotenv.Load()
@@ -19,11 +17,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/", home)
+	routers := router.MainRouter()
+
+	securemux := middlewares.ApplyMiddleWares(routers)
+
+	server := &http.Server{
+		Addr:    os.Getenv("API_PORT"),
+		Handler: securemux,
+	}
 
 	fmt.Printf("Server started successfully on http://localhost%s", os.Getenv("API_PORT"))
-
-	err = http.ListenAndServe(os.Getenv("API_PORT"), nil)
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatalln("Server error : ", err)
 	}
