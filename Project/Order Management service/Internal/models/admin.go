@@ -26,7 +26,7 @@ type AdminResponse struct {
 	Password          string  `json:"password,omitempty" db:"password,omitempty"`
 	UserCreatedAt     *string `json:"user_created_at,omitempty" db:"user_created_at,omitempty"`
 	PasswordChangedAt *string `json:"password_changed_at,omitempty" db:"password_changed_at,omitempty"`
-	InactiveStatus    bool    `json:"inactive_status,omitempty" db:"inactive_status,omitempty"`
+	InactiveStatus    bool    `json:"inactive_status" db:"inactive_status"`
 }
 
 type AdminUpdateDetail struct {
