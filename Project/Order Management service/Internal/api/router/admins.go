@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"order_mgt/Internal/api/handlers"
 )
 
 func AdminRouter() *http.ServeMux {
@@ -17,9 +18,7 @@ func AdminRouter() *http.ServeMux {
 	})
 
 	// Create :
-	mux.HandleFunc("POST /api/admin/super/register", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin register page"))
-	})
+	mux.HandleFunc("POST /api/admin/super/register", handlers.RegisterAdmin)
 	mux.HandleFunc("POST /api/admin/super/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to admin login page"))
 	})
