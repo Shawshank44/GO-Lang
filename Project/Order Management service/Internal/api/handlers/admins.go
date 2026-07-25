@@ -3,12 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/models"
 	sqlconnect "order_mgt/Internal/repository/sqlConnect"
 	"order_mgt/pkg/utils"
 	utilssql "order_mgt/pkg/utils_sql"
-	"strconv"
 	"strings"
+	"time"
 )
 
 func RegisterAdmin(w http.ResponseWriter, r *http.Request) {
@@ -24,6 +25,8 @@ func RegisterAdmin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
+
+	defer r.Body.Close()
 
 	if strings.TrimSpace(req.Username) == "" || strings.TrimSpace(req.Email) == "" || strings.TrimSpace(req.Password) == "" {
 		http.Error(w, "Fields cannot be empty", http.StatusBadRequest)
@@ -104,12 +107,13 @@ func GetAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idstr := r.PathValue("id")
-	id, err := strconv.Atoi(idstr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadGateway)
+	uid, ok := r.Context().Value(middlewares.UserIDkey).(float64)
+	if !ok {
+		http.Error(w, "invalid session", http.StatusUnauthorized)
 		return
 	}
+
+	id := int(uid)
 
 	admin, err := sqlconnect.GetAdminFromDB(r.Context(), id)
 	if err != nil {
@@ -127,4 +131,85 @@ func GetAdmin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
+}
+
+func LoginAdmin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.Admin
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+
+	if strings.TrimSpace(req.Username) == "" || strings.TrimSpace(req.Password) == "" {
+		http.Error(w, "Fields cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	admin, err := sqlconnect.LoginAdminFromDB(r.Context(), req.Username)
+	if err != nil {
+		http.Error(w, "Error fetching the user", http.StatusBadRequest)
+		return
+	}
+
+	if admin.InactiveStatus {
+		http.Error(w, "User inactive kindly contact adminstrator", http.StatusForbidden)
+		return
+	}
+
+	err = utils.VerifyPassword(req.Password, admin.Password)
+	if err != nil {
+		http.Error(w, "user does not exists", http.StatusInternalServerError)
+		return
+	}
+
+	tokenString, err := utils.SignToken(admin.ID, admin.Username, "admin")
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    tokenString,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	res := struct {
+		UserID int
+		Token  string `json:"token"`
+	}{
+		UserID: admin.ID,
+		Token:  tokenString,
+	}
+
+	json.NewEncoder(w).Encode(res)
+}
+
+func LogoutAdmin(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"Message" : "User Logout Successfully"}`))
 }

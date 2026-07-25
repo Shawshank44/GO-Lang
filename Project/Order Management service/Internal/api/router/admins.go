@@ -10,16 +10,12 @@ func AdminRouter() *http.ServeMux {
 
 	// Read :
 	mux.HandleFunc("GET /api/admin/super/getadmins", handlers.GetAdmins)
-	mux.HandleFunc("GET /api/admin/super/getadmin/{id}", handlers.GetAdmin)
+	mux.HandleFunc("GET /api/admin/super/getadmin", handlers.GetAdmin)
 
 	// Create :
 	mux.HandleFunc("POST /api/admin/super/register", handlers.RegisterAdmin)
-	mux.HandleFunc("POST /api/admin/super/login", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin login page"))
-	})
-	mux.HandleFunc("POST /api/admin/super/logout", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin logout page"))
-	})
+	mux.HandleFunc("POST /api/admin/super/login", handlers.LoginAdmin)
+	mux.HandleFunc("POST /api/admin/super/logout", handlers.LogoutAdmin)
 
 	// Update :
 	mux.HandleFunc("PATCH /api/admin/super/updateadmin/{id}", func(w http.ResponseWriter, r *http.Request) {

@@ -111,3 +111,23 @@ func GetAdminFromDB(ctx context.Context, id int) (models.AdminResponse, error) {
 	return admin, nil
 
 }
+
+func LoginAdminFromDB(ctx context.Context, username string) (*models.Admin, error) {
+	db, err := ConnectDB()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	user := &models.Admin{}
+
+	err = db.QueryRowContext(ctx, "SELECT id, username, email, password, inactive_status FROM admins WHERE username = ?", username).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.InactiveStatus)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, utils.ErrorHandler(err, "user not found")
+		}
+		return nil, utils.ErrorHandler(err, "error in connecting to database")
+	}
+	return user, nil
+}
