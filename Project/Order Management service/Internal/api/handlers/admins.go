@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/models"
@@ -212,4 +213,124 @@ func LogoutAdmin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"Message" : "User Logout Successfully"}`))
+}
+
+func UpdateAdminDetails(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	uid, ok := r.Context().Value(middlewares.UserIDkey).(float64)
+	if !ok {
+		http.Error(w, "invalid session", http.StatusUnauthorized)
+		return
+	}
+	id := int(uid)
+
+	var req models.AdminUpdateDetail
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Inavlid json payload", http.StatusBadRequest)
+		return
+	}
+
+	if strings.TrimSpace(req.Email) == "" {
+		http.Error(w, "email is required", http.StatusBadRequest)
+		return
+	}
+
+	exists, err := utilssql.EmailExists(r.Context(), req.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if exists {
+		http.Error(w, "email already exists", http.StatusConflict)
+		return
+	}
+
+	otp, err := utils.GenerateOTP(6)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = sqlconnect.UpdateAdminDetailsInDB(r.Context(), otp, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = utils.SendOTPEmail(req.Email, otp, "Your Email change request - Orderfy.com")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res := struct {
+		Success bool
+		Message string
+	}{
+		Success: true,
+		Message: fmt.Sprintf("Email change request has been shared to %s", req.Email),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
+}
+
+func ConfirmAdminDetails(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusBadRequest)
+		return
+	}
+
+	uid, ok := r.Context().Value(middlewares.UserIDkey).(float64)
+	if !ok {
+		http.Error(w, "invalid session", http.StatusUnauthorized)
+		return
+	}
+	id := int(uid)
+
+	var req models.ConfirmDetailAdmins
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if strings.TrimSpace(req.Otp) == "" || strings.TrimSpace(req.Email) == "" {
+		http.Error(w, "otp is required", http.StatusBadRequest)
+		return
+	}
+
+	exists, err := utilssql.EmailExists(r.Context(), req.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if exists {
+		http.Error(w, "Email already exists", http.StatusInternalServerError)
+		return
+	}
+
+	err = sqlconnect.ConfirmAdminDetailsInDB(r.Context(), req, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res := struct {
+		Success bool
+		Message string
+	}{
+		Success: true,
+		Message: fmt.Sprintf("email address has been updated to %s", req.Email),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&res)
 }

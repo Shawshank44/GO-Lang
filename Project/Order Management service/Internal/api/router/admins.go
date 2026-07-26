@@ -18,9 +18,8 @@ func AdminRouter() *http.ServeMux {
 	mux.HandleFunc("POST /api/admin/super/logout", handlers.LogoutAdmin)
 
 	// Update :
-	mux.HandleFunc("PATCH /api/admin/super/updateadmin/{id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin update page"))
-	})
+	mux.HandleFunc("POST /api/admin/super/updatedetail", handlers.UpdateAdminDetails)
+	mux.HandleFunc("POST /api/admin/super/confirmdetail", handlers.ConfirmAdminDetails)
 
 	// Delete :
 	mux.HandleFunc("DELETE /api/admin/super/deactivate", func(w http.ResponseWriter, r *http.Request) {

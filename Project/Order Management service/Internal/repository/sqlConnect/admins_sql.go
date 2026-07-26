@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"order_mgt/Internal/models"
 	"order_mgt/pkg/utils"
+	"time"
 )
 
 func RegisterAdminToDB(ctx context.Context, req models.Admin) (int64, error) {
@@ -130,4 +131,47 @@ func LoginAdminFromDB(ctx context.Context, username string) (*models.Admin, erro
 		return nil, utils.ErrorHandler(err, "error in connecting to database")
 	}
 	return user, nil
+}
+
+func UpdateAdminDetailsInDB(ctx context.Context, otp string, id int) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	mins := time.Duration(10)
+	expiry := time.Now().Add(mins * time.Minute).Format(time.RFC3339)
+
+	_, err = db.ExecContext(ctx, "UPDATE admins SET password_otp = ?, otp_expires = ? WHERE id = ?", otp, expiry, id)
+	if err != nil {
+		return utils.ErrorHandler(err, err.Error())
+	}
+
+	return nil
+}
+
+func ConfirmAdminDetailsInDB(ctx context.Context, req models.ConfirmDetailAdmins, id int) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	var userID int
+
+	query := "SELECT id FROM admins WHERE password_otp = ? AND otp_expires > ?"
+	err = db.QueryRowContext(ctx, query, req.Otp, time.Now().Format(time.RFC3339)).Scan(&userID)
+	if err != nil {
+		return utils.ErrorHandler(err, "Otp is invalid or either expired.")
+	}
+
+	_, err = db.ExecContext(ctx, "UPDATE admins SET email = ?, password_otp = NULL, otp_expires = NULL WHERE id = ?", req.Email, id)
+	if err != nil {
+		return utils.ErrorHandler(err, "Unable to update the email id in DB")
+	}
+
+	return nil
 }
