@@ -175,3 +175,28 @@ func ConfirmAdminDetailsInDB(ctx context.Context, req models.ConfirmDetailAdmins
 
 	return nil
 }
+
+func DeactivateAdminFromDB(ctx context.Context, id int) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	res, err := db.ExecContext(ctx, "DELETE FROM admins WHERE id = ?", id)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server errors")
+	}
+
+	if rowsAffected == 0 {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	return nil
+}

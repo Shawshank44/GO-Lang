@@ -334,3 +334,45 @@ func ConfirmAdminDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&res)
 }
+
+func DeactivateAdmin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	uid, ok := r.Context().Value(middlewares.UserIDkey).(float64)
+	if !ok {
+		http.Error(w, "invalid session", http.StatusUnauthorized)
+		return
+	}
+	id := int(uid)
+
+	err := sqlconnect.DeactivateAdminFromDB(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Unable to deactivate user from DB", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	res := struct {
+		Status string
+		ID     int
+	}{
+		Status: "User Successfully deactivated",
+		ID:     id,
+	}
+
+	json.NewEncoder(w).Encode(res)
+
+}

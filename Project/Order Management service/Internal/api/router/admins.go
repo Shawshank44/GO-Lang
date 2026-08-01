@@ -22,12 +22,11 @@ func AdminRouter() *http.ServeMux {
 	mux.HandleFunc("POST /api/admin/super/confirmdetail", handlers.ConfirmAdminDetails)
 
 	// Delete :
-	mux.HandleFunc("DELETE /api/admin/super/deactivate", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin deactivate page"))
-	})
-	mux.HandleFunc("DELETE /api/admin/super/deactivateusers", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin deactivateusers page"))
-	})
+	mux.HandleFunc("DELETE /api/admin/super/deactivate", handlers.DeactivateAdmin)
+
+	// mux.HandleFunc("DELETE /api/admin/super/deactivateusers", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Write([]byte("Welcome to admin deactivateusers page"))
+	// })
 
 	// MISCS :
 	mux.HandleFunc("POST /api/admin/super/forgotpassword", func(w http.ResponseWriter, r *http.Request) {
