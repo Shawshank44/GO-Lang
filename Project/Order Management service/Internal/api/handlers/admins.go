@@ -62,7 +62,7 @@ func RegisterAdmin(w http.ResponseWriter, r *http.Request) {
 		ID:     userID,
 	}
 
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(&res)
 }
 
 func GetAdmins(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +98,7 @@ func GetAdmins(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(&res)
 
 }
 
@@ -131,7 +131,7 @@ func GetAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(&res)
 }
 
 func LoginAdmin(w http.ResponseWriter, r *http.Request) {
@@ -197,7 +197,7 @@ func LoginAdmin(w http.ResponseWriter, r *http.Request) {
 		Token:  tokenString,
 	}
 
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(&res)
 }
 
 func LogoutAdmin(w http.ResponseWriter, r *http.Request) {
@@ -278,7 +278,7 @@ func UpdateAdminDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(&res)
 }
 
 func ConfirmAdminDetails(w http.ResponseWriter, r *http.Request) {
@@ -373,6 +373,101 @@ func DeactivateAdmin(w http.ResponseWriter, r *http.Request) {
 		ID:     id,
 	}
 
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(&res)
 
+}
+
+func ForgotPasswordAdmin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.AdminUpdateDetail
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid payload request", http.StatusBadRequest)
+		return
+	}
+
+	if strings.TrimSpace(req.Email) == "" {
+		http.Error(w, "Email field cannot be blank", http.StatusBadRequest)
+		return
+	}
+
+	exists, err := utilssql.EmailExists(r.Context(), req.Email)
+	if err != nil {
+		http.Error(w, "Unable to query email", http.StatusInternalServerError)
+		return
+	}
+
+	if !exists {
+		http.Error(w, "Invalid email address", http.StatusConflict)
+		return
+	}
+
+	otp, err := utils.GenerateOTP(6)
+	if err != nil {
+		http.Error(w, "Unable to generate the OTP", http.StatusBadRequest)
+		return
+	}
+
+	err = sqlconnect.ForgotPasswordAdminFromDB(r.Context(), otp, req.Email)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	err = utils.SendOTPEmail(req.Email, otp, "Your Password change request - Orderfy.com")
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	res := struct {
+		Success bool
+		Message string
+	}{
+		Success: true,
+		Message: fmt.Sprintf("Password change request has been shared to %s", req.Email),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&res)
+}
+
+func ResetPasswordAdmin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusBadRequest)
+		return
+	}
+
+	var req models.UpdatePasswordRequestAdmins
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid payload request", http.StatusBadRequest)
+		return
+	}
+
+	if strings.TrimSpace(req.Otp) == "" || strings.TrimSpace(req.NewPassword) == "" {
+		http.Error(w, "fields cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	err = sqlconnect.ResetPasswordAdminFromDB(r.Context(), req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res := struct {
+		Success bool
+		Message string
+	}{
+		Success: true,
+		Message: fmt.Sprintln("Password has been updated kindly login."),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&res)
 }

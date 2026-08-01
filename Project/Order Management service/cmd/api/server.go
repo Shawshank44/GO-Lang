@@ -24,7 +24,7 @@ func main() {
 	}
 
 	routers := router.MainRouter()
-	jwtMiddlewares := middlewares.MiddlewaresExcludeParts(middlewares.JWTMiddleware, "/api/admin/super/register", "/api/admin/super/login")
+	jwtMiddlewares := middlewares.MiddlewaresExcludeParts(middlewares.JWTMiddleware, "/api/admin/super/register", "/api/admin/super/login", "/api/admin/super/forgotpassword", "/api/admin/super/resetpassword")
 	securemux := middlewares.ApplyMiddleWares(routers, jwtMiddlewares)
 
 	server := &http.Server{

@@ -3,6 +3,7 @@ package sqlconnect
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"order_mgt/Internal/models"
@@ -195,6 +196,66 @@ func DeactivateAdminFromDB(ctx context.Context, id int) error {
 	}
 
 	if rowsAffected == 0 {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	return nil
+}
+
+func ForgotPasswordAdminFromDB(ctx context.Context, otp, email string) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	mins := time.Duration(10)
+	expiry := time.Now().Add(mins * time.Minute).Format(time.RFC3339)
+
+	_, err = db.ExecContext(ctx, "UPDATE admins SET password_otp = ?, otp_expires = ? WHERE email = ?", otp, expiry, email)
+	if err != nil {
+		return utils.ErrorHandler(err, "unable to update the admin fields in DB")
+	}
+
+	return nil
+}
+
+func ResetPasswordAdminFromDB(ctx context.Context, req models.UpdatePasswordRequestAdmins) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	var userID int
+	var currentPassword string
+
+	query := "SELECT id, password FROM admins WHERE password_otp = ? AND otp_expires > ?"
+
+	err = db.QueryRowContext(ctx, query, req.Otp, time.Now().Format(time.RFC3339)).Scan(&userID, &currentPassword)
+	if err != nil {
+		return utils.ErrorHandler(err, "OTP is invalid or expired")
+	}
+
+	same, err := utils.IsSameAsOldPassword(req.NewPassword, currentPassword)
+	if err != nil {
+		return utils.ErrorHandler(err, "Password Comparision failed")
+	}
+
+	if same {
+		return utils.ErrorHandler(errors.New("new password must be different from old password"), "new password must be different from old password")
+	}
+
+	newPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return utils.ErrorHandler(err, "Unable to hash the new password")
+	}
+
+	updateQuery := "UPDATE admins SET password = ?, password_otp = NULL, otp_expires = NULL, password_changed_at = CURRENT_TIMESTAMP WHERE id = ?"
+	_, err = db.ExecContext(ctx, updateQuery, newPassword, userID)
+	if err != nil {
 		return utils.ErrorHandler(err, "Internal server error")
 	}
 

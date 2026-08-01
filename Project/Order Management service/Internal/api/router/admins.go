@@ -29,12 +29,8 @@ func AdminRouter() *http.ServeMux {
 	// })
 
 	// MISCS :
-	mux.HandleFunc("POST /api/admin/super/forgotpassword", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin forgotpassword page"))
-	})
-	mux.HandleFunc("POST /api/admin/super/resetpassword", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to admin resetpassword page"))
-	})
+	mux.HandleFunc("POST /api/admin/super/forgotpassword", handlers.ForgotPasswordAdmin)
+	mux.HandleFunc("POST /api/admin/super/resetpassword", handlers.ResetPasswordAdmin)
 
 	return mux
 }
