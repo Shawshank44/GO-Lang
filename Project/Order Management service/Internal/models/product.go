@@ -18,8 +18,11 @@ type Product struct {
 
 	Status string `json:"status,omitempty" db:"status,omitempty"`
 
-	CreatedAt *string `json:"created_at,omitempty" db:"created_at,omitempty"`
-	UpdatedAt *string `json:"updated_at,omitempty" db:"updated_at,omitempty"`
+	CreatedAt          *string `json:"created_at,omitempty" db:"created_at,omitempty"`
+	SpecsUpdatedAt     *string `json:"spec_updated_at,omitempty" db:"spec_updated_at,omitempty"`
+	InventoryUpdatedAt *string `json:"inventory_updated_at,omitempty" db:"inventory_updated_at,omitempty"`
+
+	UpdatedBy *string `json:"updated_by,omitempty" db:"updated_by,omitempty"`
 }
 
 type Inventory struct {
@@ -29,5 +32,4 @@ type Inventory struct {
 	Stock     int     `json:"stock,omitempty" db:"stock,omitempty"`
 	Unit      string  `json:"unit,omitempty" db:"unit,omitempty"`
 	Status    string  `json:"status,omitempty" db:"status,omitempty"`
-	UpdatedAt *string `json:"updated_at,omitempty" db:"updated_at,omitempty"`
 }
