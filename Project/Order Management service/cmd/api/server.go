@@ -6,6 +6,7 @@ import (
 	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/api/router"
 	sqlconnect "order_mgt/Internal/repository/sqlConnect"
+	utilssql "order_mgt/pkg/utils_sql"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -31,6 +32,18 @@ func main() {
 		Addr:    os.Getenv("API_PORT"),
 		Handler: securemux,
 	}
+
+	min, err := utilssql.NewMinioService()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = min.CheckBucket()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("MINIO Service successfully connected..")
 
 	log.Printf("Server started successfully on http://localhost%s", os.Getenv("API_PORT"))
 	err = server.ListenAndServe()

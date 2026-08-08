@@ -23,6 +23,8 @@ type Product struct {
 	InventoryUpdatedAt *string `json:"inventory_updated_at,omitempty" db:"inventory_updated_at,omitempty"`
 
 	UpdatedBy *string `json:"updated_by,omitempty" db:"updated_by,omitempty"`
+
+	Images []string `json:"images,omitempty" db:"images,omitempty"`
 }
 
 type Inventory struct {
