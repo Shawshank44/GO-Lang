@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"order_mgt/pkg/utils"
 	"os"
 
@@ -46,4 +47,18 @@ func (m *MinioService) CheckBucket() error {
 	}
 
 	return nil
+}
+
+func (m *MinioService) Upload(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+	objectName := fileHeader.Filename
+
+	_, err := m.Client.PutObject(ctx, m.BucketName, objectName, file, fileHeader.Size, minio.PutObjectOptions{
+		ContentType: fileHeader.Header.Get("Content-Type"),
+	})
+
+	if err != nil {
+		return "", utils.ErrorHandler(err, "Unable to upload the file")
+	}
+
+	return objectName, nil
 }

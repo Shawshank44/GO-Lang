@@ -1,10 +1,13 @@
 package router
 
-import "net/http"
+import (
+	"net/http"
+	utilssql "order_mgt/pkg/utils_sql"
+)
 
-func MainRouter() *http.ServeMux {
+func MainRouter(MinioService *utilssql.MinioService) *http.ServeMux {
 	Urouter := UserRouter()
-	Prouter := ProductRouter()
+	Prouter := ProductRouter(MinioService)
 	Arouter := AdminRouter()
 
 	Urouter.Handle("/", Prouter)

@@ -3,10 +3,15 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"order_mgt/Internal/api/handlers"
+	utilssql "order_mgt/pkg/utils_sql"
 )
 
-func ProductRouter() *http.ServeMux {
+func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux {
 	mux := http.NewServeMux()
+
+	// Image uploader :
+	mux.HandleFunc("POST /products/images", handlers.UploadProductImage(MinioService))
 
 	// GET :
 	mux.HandleFunc("GET /getproducts", func(w http.ResponseWriter, r *http.Request) {

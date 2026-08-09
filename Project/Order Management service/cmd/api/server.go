@@ -24,23 +24,23 @@ func main() {
 		log.Fatalln("unable to connect to DB", err)
 	}
 
-	routers := router.MainRouter()
+	Min, err := utilssql.NewMinioService()
+	if err != nil {
+		log.Fatal("failed to start the Minio serve", err)
+	}
+
+	err = Min.CheckBucket()
+	if err != nil {
+		log.Fatal("Invalid Bucket", err)
+	}
+
+	routers := router.MainRouter(Min)
 	jwtMiddlewares := middlewares.MiddlewaresExcludeParts(middlewares.JWTMiddleware, "/api/admin/super/register", "/api/admin/super/login", "/api/admin/super/forgotpassword", "/api/admin/super/resetpassword")
 	securemux := middlewares.ApplyMiddleWares(routers, jwtMiddlewares)
 
 	server := &http.Server{
 		Addr:    os.Getenv("API_PORT"),
 		Handler: securemux,
-	}
-
-	min, err := utilssql.NewMinioService()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = min.CheckBucket()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	log.Println("MINIO Service successfully connected..")
