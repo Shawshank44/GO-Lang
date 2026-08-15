@@ -68,9 +68,11 @@ func UploadProductImage(minioService *utilssql.MinioService) http.HandlerFunc {
 		res := struct {
 			Success bool
 			Message string
+			URL     string
 		}{
 			Success: true,
 			Message: fmt.Sprintln("File", objectName, "has been sucessfully uploaded"),
+			URL:     minioService.GetURL(objectName),
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(&res)

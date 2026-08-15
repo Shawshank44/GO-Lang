@@ -11,7 +11,7 @@ func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Image uploader :
-	mux.HandleFunc("POST /products/images", handlers.UploadProductImage(MinioService))
+	mux.HandleFunc("POST /products/assets", handlers.UploadProductImage(MinioService))
 
 	// GET :
 	mux.HandleFunc("GET /getproducts", func(w http.ResponseWriter, r *http.Request) {

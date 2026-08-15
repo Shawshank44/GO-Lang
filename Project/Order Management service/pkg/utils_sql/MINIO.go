@@ -8,6 +8,7 @@ import (
 	"order_mgt/pkg/utils"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
@@ -20,7 +21,7 @@ type MinioService struct {
 func NewMinioService() (*MinioService, error) {
 	port := fmt.Sprintf("localhost%s", os.Getenv("MINIO_PORT"))
 	client, err := minio.New(port, &minio.Options{
-		Creds:  credentials.NewStaticV4("minioadmin", "minioadmin", ""),
+		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_USERNAME"), os.Getenv("MINIO_PASSWORD"), ""),
 		Secure: false,
 	})
 
@@ -50,7 +51,7 @@ func (m *MinioService) CheckBucket() error {
 }
 
 func (m *MinioService) Upload(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
-	objectName := fileHeader.Filename
+	objectName := "products/" + uuid.New().String()
 
 	_, err := m.Client.PutObject(ctx, m.BucketName, objectName, file, fileHeader.Size, minio.PutObjectOptions{
 		ContentType: fileHeader.Header.Get("Content-Type"),
@@ -61,4 +62,13 @@ func (m *MinioService) Upload(ctx context.Context, file multipart.File, fileHead
 	}
 
 	return objectName, nil
+}
+
+func (m *MinioService) GetURL(objectName string) string {
+	return fmt.Sprintf(
+		"http://%s/%s/%s",
+		fmt.Sprintf("localhost%s", os.Getenv("MINIO_PORT")),
+		m.BucketName,
+		objectName,
+	)
 }
