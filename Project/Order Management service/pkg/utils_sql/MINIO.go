@@ -72,3 +72,7 @@ func (m *MinioService) GetURL(objectName string) string {
 		objectName,
 	)
 }
+
+func (m *MinioService) Delete(ctx context.Context, objectName string) error {
+	return m.Client.RemoveObject(ctx, m.BucketName, objectName, minio.RemoveObjectOptions{})
+}

@@ -10,6 +10,9 @@ import (
 func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux {
 	mux := http.NewServeMux()
 
+	// Session Routes:
+	mux.HandleFunc("POST /session/create", handlers.CreateSession)
+
 	// Image uploader :
 	mux.HandleFunc("POST /products/assets", handlers.UploadProductImage(MinioService))
 
