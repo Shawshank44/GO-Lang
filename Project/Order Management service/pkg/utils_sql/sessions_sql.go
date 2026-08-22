@@ -38,24 +38,3 @@ func ValidateSessionsInDB(ctx context.Context, sessionID string) (bool, error) {
 
 	return exists, err
 }
-
-func FinalizeSessionUploads(ctx context.Context, sessionID string) error {
-	db, err := sqlconnect.ConnectDB()
-	if err != nil {
-		return utils.ErrorHandler(err, "Internal server error")
-	}
-
-	defer db.Close()
-
-	_, err = db.ExecContext(ctx, "UPDATE files SET session_id=NULL WHERE session_id = ?", sessionID)
-	if err != nil {
-		return utils.ErrorHandler(err, "Internal server error unable to query sessions")
-	}
-
-	_, err = db.ExecContext(ctx, "DELETE FROM uploads_sessions WHERE id = ?", sessionID)
-	if err != nil {
-		return utils.ErrorHandler(err, "Internal server error unable to query upload sessions")
-	}
-
-	return nil
-}

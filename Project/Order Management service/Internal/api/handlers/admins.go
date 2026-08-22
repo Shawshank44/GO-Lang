@@ -168,7 +168,7 @@ func LoginAdmin(w http.ResponseWriter, r *http.Request) {
 
 	err = utils.VerifyPassword(req.Password, admin.Password)
 	if err != nil {
-		http.Error(w, "user does not exists", http.StatusInternalServerError)
+		http.Error(w, "user does not exists", http.StatusUnauthorized)
 		return
 	}
 

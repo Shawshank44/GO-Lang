@@ -30,9 +30,7 @@ func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux {
 	})
 
 	// POST :
-	mux.HandleFunc("POST /admins/product/registery/create", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to productregistery page")
-	})
+	mux.HandleFunc("POST /admins/product/registery/create", handlers.CreateProduct)
 
 	// PATCH :
 	mux.HandleFunc("PATCH /admins/product/registery/update/{id}", func(w http.ResponseWriter, r *http.Request) {

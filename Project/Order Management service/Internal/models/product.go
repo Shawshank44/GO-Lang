@@ -1,5 +1,10 @@
 package models
 
+type ProductImage struct {
+	URL       string `json:"url,omitempty" db:"url,omitempty"`
+	IsPrimary bool   `json:"is_primary,omitempty" db:"is_primary,omitempty"`
+}
+
 type Product struct {
 	ID          int64  `json:"id,omitempty" db:"id,omitempty"`
 	SKU         string `json:"sku,omitempty" db:"sku,omitempty"`
@@ -24,7 +29,7 @@ type Product struct {
 
 	UpdatedBy *string `json:"updated_by,omitempty" db:"updated_by,omitempty"`
 
-	Images []string `json:"images,omitempty" db:"images,omitempty"`
+	Images []ProductImage `json:"images,omitempty" db:"images,omitempty"`
 }
 
 type Inventory struct {
