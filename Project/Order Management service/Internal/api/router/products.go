@@ -17,13 +17,9 @@ func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux {
 	mux.HandleFunc("POST /products/assets", handlers.UploadProductImage(MinioService))
 
 	// GET :
-	mux.HandleFunc("GET /getproducts", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to products page")
-	})
+	mux.HandleFunc("GET /getproducts", handlers.GetProducts)
 
-	mux.HandleFunc("GET /getproduct/detail/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Welcome to product detail page %v", r.PathValue("id"))
-	})
+	mux.HandleFunc("GET /getproduct/detail/{id}", handlers.GetProduct)
 
 	mux.HandleFunc("GET /getproduct/search", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Welcome to product search page")

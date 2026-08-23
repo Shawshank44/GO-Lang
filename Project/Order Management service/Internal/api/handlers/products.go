@@ -6,7 +6,9 @@ import (
 	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/models"
 	sqlconnect "order_mgt/Internal/repository/sqlConnect"
+	"order_mgt/pkg/utils"
 	utilssql "order_mgt/pkg/utils_sql"
+	"strconv"
 )
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -61,4 +63,71 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&res)
+}
+
+func GetProducts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	page, limit := utils.GetPaginationParams(r)
+
+	productlist, totalproducts, err := sqlconnect.GetProductsFromDB(r.Context(), r, limit, page)
+	if err != nil {
+		http.Error(w, "unable to fetch products", http.StatusBadRequest)
+		return
+	}
+
+	totalPages := (totalproducts + limit - 1) / limit
+
+	res := struct {
+		Status     string
+		Count      int
+		TotalPages int
+		PageNo     int
+		PageSize   int
+		Data       []models.Product
+	}{
+		Status:     "Success",
+		Count:      totalproducts,
+		TotalPages: totalPages,
+		PageNo:     page,
+		PageSize:   limit,
+		Data:       productlist,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&res)
+}
+
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idstr := r.PathValue("id")
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		http.Error(w, "Invalid ID type", http.StatusBadRequest)
+		return
+	}
+
+	product, err := sqlconnect.GetProductFromDB(r.Context(), id)
+	if err != nil {
+		http.Error(w, "unable to fetch the product", http.StatusInternalServerError)
+		return
+	}
+
+	res := struct {
+		Status  string
+		Product models.Product
+	}{
+		Status:  "Success",
+		Product: *product,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
 }
