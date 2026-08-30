@@ -7,7 +7,7 @@ import (
 	utilssql "order_mgt/pkg/utils_sql"
 )
 
-func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux {
+func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux { // Minio Service Called
 	mux := http.NewServeMux()
 
 	// Session Routes:
