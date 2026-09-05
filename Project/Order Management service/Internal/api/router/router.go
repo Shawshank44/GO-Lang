@@ -2,10 +2,10 @@ package router
 
 import (
 	"net/http"
-	utilssql "order_mgt/pkg/utils_sql"
+	"order_mgt/pkg/storage"
 )
 
-func MainRouter(MinioService *utilssql.MinioService) *http.ServeMux {
+func MainRouter(MinioService *storage.MinioService) *http.ServeMux {
 	Urouter := UserRouter()
 	Prouter := ProductRouter(MinioService)
 	Arouter := AdminRouter()

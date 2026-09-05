@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"order_mgt/pkg/storage"
 	utilssql "order_mgt/pkg/utils_sql"
 
 	"github.com/google/uuid"
@@ -46,7 +47,7 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&res)
 }
 
-func UploadProductImage(minioService *utilssql.MinioService) http.HandlerFunc {
+func UploadProductImage(minioService *storage.MinioService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

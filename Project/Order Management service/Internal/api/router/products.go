@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"order_mgt/Internal/api/handlers"
-	utilssql "order_mgt/pkg/utils_sql"
+	"order_mgt/pkg/storage"
 )
 
-func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux { // Minio Service Called
+func ProductRouter(MinioService *storage.MinioService) *http.ServeMux { // Minio Service Called
 	mux := http.NewServeMux()
 
 	// Session Routes:
@@ -29,9 +29,7 @@ func ProductRouter(MinioService *utilssql.MinioService) *http.ServeMux { // Mini
 	mux.HandleFunc("POST /admins/product/registery/create", handlers.CreateProduct)
 
 	// PATCH :
-	mux.HandleFunc("PATCH /admins/product/registery/update/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Welcome to product update page. %v", r.PathValue("id"))
-	})
+	mux.HandleFunc("PATCH /admins/product/registery/{id}/update", handlers.UpdateProduct(MinioService))
 
 	mux.HandleFunc("PATCH /admins/product/inventory/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Welcome to inventory update page %v", r.PathValue("id"))

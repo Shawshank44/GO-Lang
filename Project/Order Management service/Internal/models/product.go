@@ -2,7 +2,7 @@ package models
 
 type ProductImage struct {
 	URL       string `json:"url,omitempty" db:"url,omitempty"`
-	IsPrimary bool   `json:"is_primary,omitempty" db:"is_primary,omitempty"`
+	IsPrimary bool   `json:"is_primary" db:"is_primary"` // omitempty is not needed because is_primary will have no value if false
 }
 
 type Product struct {

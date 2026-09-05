@@ -6,7 +6,7 @@ import (
 	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/api/router"
 	sqlconnect "order_mgt/Internal/repository/sqlConnect"
-	utilssql "order_mgt/pkg/utils_sql"
+	"order_mgt/pkg/storage"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -24,7 +24,7 @@ func main() {
 		log.Fatalln("unable to connect to DB", err)
 	}
 
-	Min, err := utilssql.NewMinioService()
+	Min, err := storage.NewMinioService()
 	if err != nil {
 		log.Fatal("failed to start the Minio serve", err)
 	}

@@ -4,9 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"order_mgt/Internal/models"
+	"order_mgt/pkg/storage"
 	"order_mgt/pkg/utils"
+	"os"
+	"strings"
 )
 
 func CreateProductInDB(ctx context.Context, product *models.Product, sessionID string) (int64, error) {
@@ -209,4 +215,146 @@ func GetProductFromDB(ctx context.Context, id int) (*models.Product, error) {
 	}
 
 	return &product, nil
+}
+
+func UpdateProductInDB(ctx context.Context, minioService *storage.MinioService, product *models.Product, id int, sessionID string) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal server error")
+	}
+
+	defer db.Close()
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return utils.ErrorHandler(err, "Internal tx error")
+	}
+
+	defer tx.Rollback()
+
+	var oldImageJSON []byte
+	err = tx.QueryRowContext(ctx, `SELECT images FROM products WHERE id=?`, id).Scan(&oldImageJSON)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.ErrorHandler(err, "product not found")
+		}
+		return utils.ErrorHandler(err, "unable to fetch product")
+	}
+
+	// Existing images stored in DB
+	var oldImages []models.ProductImage
+
+	if len(oldImageJSON) > 0 {
+		if err := json.Unmarshal(oldImageJSON, &oldImages); err != nil {
+			return utils.ErrorHandler(err, "Invalid old images")
+		}
+	}
+
+	// New images coming from request
+	newImages := product.Images
+
+	imgContent, err := json.Marshal(newImages)
+	if err != nil {
+		return utils.ErrorHandler(err, "image serialization failed")
+	}
+
+	res, err := tx.ExecContext(
+		ctx,
+		`UPDATE products
+	 SET sku=?,
+	     name=?,
+	     description=?,
+	     category=?,
+	     brand=?,
+	     manufacturer=?,
+	     spec_updated_at=CURRENT_TIMESTAMP,
+	     updated_by=?,
+	     images=?
+	 WHERE id=?`,
+		product.SKU,
+		product.Name,
+		product.Description,
+		product.Category,
+		product.Brand,
+		product.Manufacturer,
+		product.UpdatedBy,
+		imgContent,
+		id,
+	)
+	if err != nil {
+		return utils.ErrorHandler(err, "unable to update product")
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return utils.ErrorHandler(err, "unable to determine updated rows")
+	}
+	if rows == 0 {
+		return utils.ErrorHandler(
+			errors.New("product not found"),
+			"product not found",
+		)
+	}
+
+	if sessionID != "" {
+		_, err = tx.ExecContext(ctx, `UPDATE files SET session_id = NULL WHERE session_id = ?`, sessionID)
+		if err != nil {
+			return utils.ErrorHandler(err, "Unable to finalize uploaded files")
+		}
+		_, err = tx.ExecContext(ctx, `DELETE FROM upload_sessions WHERE id = ?`, sessionID)
+		if err != nil {
+			return utils.ErrorHandler(err, "Unable to delete upload session")
+		}
+	}
+
+	// Store all URLs that still exist after the update
+	newSet := make(map[string]struct{}, len(newImages))
+
+	for _, img := range newImages {
+		if img.URL == "" {
+			continue
+		}
+
+		newSet[img.URL] = struct{}{}
+	}
+
+	var objectsToDelete []string
+
+	// Find old images that were removed
+	for _, old := range oldImages {
+		objName := strings.TrimPrefix(old.URL, fmt.Sprintf("http://localhost%s/product-images/", os.Getenv("MINIO_PORT")))
+		if old.URL == "" {
+			continue
+		}
+		// Image still exists, so don't delete it
+		if _, exists := newSet[old.URL]; exists {
+			continue
+		}
+
+		// Remove file record from DB
+		_, err = tx.ExecContext(ctx, `DELETE FROM files WHERE file_path = ?`, objName)
+		if err != nil {
+			return utils.ErrorHandler(err, "Unable to delete the file")
+		}
+
+		objectsToDelete = append(objectsToDelete, objName)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return utils.ErrorHandler(err, "transaction failed")
+	}
+
+	// MinIO is external to the SQL transaction.
+	// Delete objects only after the DB transaction commits.
+	for _, objName := range objectsToDelete {
+		if err := minioService.Delete(ctx, objName); err != nil {
+			log.Printf(
+				"failed to delete obsolete MinIO object %q: %v",
+				objName,
+				err,
+			)
+		}
+	}
+
+	return nil
 }
