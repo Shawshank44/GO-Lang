@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/api/router"
 	sqlconnect "order_mgt/Internal/repository/sqlConnect"
+	"order_mgt/Internal/service"
 	"order_mgt/pkg/storage"
 	"os"
 
@@ -33,6 +35,15 @@ func main() {
 	if err != nil {
 		log.Fatal("Invalid Bucket", err)
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func(ctx context.Context, minioService *storage.MinioService) {
+		if err := service.StartCleaner(ctx, minioService); err != nil {
+			log.Printf("cleaner stopped: %v", err)
+		}
+	}(ctx, Min)
 
 	routers := router.MainRouter(Min)
 	jwtMiddlewares := middlewares.MiddlewaresExcludeParts(middlewares.JWTMiddleware, "/api/admin/super/register", "/api/admin/super/login", "/api/admin/super/forgotpassword", "/api/admin/super/resetpassword")
