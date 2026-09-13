@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"order_mgt/Internal/api/middlewares"
 	"order_mgt/Internal/models"
@@ -190,4 +191,48 @@ func UpdateProduct(minioService *storage.MinioService) http.HandlerFunc {
 		}
 		json.NewEncoder(w).Encode(&res)
 	}
+}
+
+func UpdateInventory(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	productID := r.PathValue("id")
+
+	pid, err := strconv.Atoi(productID)
+	if err != nil {
+		http.Error(w, "Unable to convert id", http.StatusForbidden)
+		return
+	}
+
+	var inventory models.Inventory
+
+	err = json.NewDecoder(r.Body).Decode(&inventory)
+	if err != nil {
+		http.Error(w, "Invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	username, ok := r.Context().Value(middlewares.UsernameKey).(string)
+	if !ok {
+		http.Error(w, "username not found in context", http.StatusUnauthorized)
+		return
+	}
+	inventory.UpdatedBy = &username
+
+	err = sqlconnect.InventoryUpdateInDB(r.Context(), &inventory, pid)
+	if err != nil {
+		http.Error(w, "Intenal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	res := struct {
+		Success string
+	}{
+		Success: fmt.Sprintf("Product %d inventory has been updated successfully", pid),
+	}
+	json.NewEncoder(w).Encode(&res)
 }

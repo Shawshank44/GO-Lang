@@ -33,10 +33,11 @@ type Product struct {
 }
 
 type Inventory struct {
-	ProductID int64   `json:"product_id,omitempty" db:"product_id,omitempty"`
-	Price     float64 `json:"price,omitempty" db:"price,omitempty"`
-	Currency  string  `json:"currency,omitempty" db:"currency,omitempty"`
-	Stock     int     `json:"stock,omitempty" db:"stock,omitempty"`
-	Unit      string  `json:"unit,omitempty" db:"unit,omitempty"`
-	Status    string  `json:"status,omitempty" db:"status,omitempty"`
+	Price              float64 `json:"price,omitempty" db:"price,omitempty"`
+	Currency           string  `json:"currency,omitempty" db:"currency,omitempty"`
+	Stock              int     `json:"stock,omitempty" db:"stock,omitempty"`
+	Unit               string  `json:"unit,omitempty" db:"unit,omitempty"`
+	UpdatedBy          *string `json:"updated_by,omitempty" db:"updated_by,omitempty"`
+	InventoryUpdatedAt *string `json:"inventory_updated_at,omitempty" db:"inventory_updated_at,omitempty"`
+	Status             string  `json:"status,omitempty" db:"status,omitempty"`
 }

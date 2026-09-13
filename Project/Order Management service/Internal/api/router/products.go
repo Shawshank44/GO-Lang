@@ -31,9 +31,7 @@ func ProductRouter(MinioService *storage.MinioService) *http.ServeMux { // Minio
 	// PATCH :
 	mux.HandleFunc("PATCH /admins/product/registery/{id}/update", handlers.UpdateProduct(MinioService))
 
-	mux.HandleFunc("PATCH /admins/product/inventory/update/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Welcome to inventory update page %v", r.PathValue("id"))
-	})
+	mux.HandleFunc("PATCH /admins/product/inventory/update/{id}", handlers.UpdateInventory)
 
 	// DELETE :
 	mux.HandleFunc("DELETE /admins/product/registery/delete", func(w http.ResponseWriter, r *http.Request) {

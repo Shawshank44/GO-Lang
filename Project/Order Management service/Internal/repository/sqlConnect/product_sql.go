@@ -358,3 +358,30 @@ func UpdateProductInDB(ctx context.Context, minioService *storage.MinioService, 
 
 	return nil
 }
+
+func InventoryUpdateInDB(ctx context.Context, inventory *models.Inventory, id int) error {
+	db, err := ConnectDB()
+	if err != nil {
+		return utils.ErrorHandler(err, "internal server error")
+	}
+
+	defer db.Close()
+
+	query := `UPDATE products SET price=?, currency=?, stock=?, unit=?, updated_by=?, inventory_updated_at=CURRENT_TIMESTAMP, status=? WHERE id=?`
+
+	res, err := db.ExecContext(ctx, query, inventory.Price, inventory.Currency, inventory.Stock, inventory.Unit, inventory.UpdatedBy, inventory.Status, id)
+	if err != nil {
+		return utils.ErrorHandler(err, "unable to update the inventory.")
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return utils.ErrorHandler(err, "unable to determine the updated rows.")
+	}
+
+	if rows == 0 {
+		return utils.ErrorHandler(errors.New("product not found"), "product not found")
+	}
+
+	return nil
+}
