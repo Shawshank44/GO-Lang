@@ -100,3 +100,36 @@ func GetPaginationParams(r *http.Request) (int, int) {
 
 	return page, limit
 }
+
+func AddSearch(r *http.Request, query string, args []interface{}) (string, []interface{}) {
+	search := strings.TrimSpace(r.URL.Query().Get("q"))
+
+	if search == "" {
+		return query, args
+	}
+
+	searchPattern := "%" + search + "%"
+
+	query += `
+		AND (
+			sku LIKE ?
+			OR name LIKE ?
+			OR description LIKE ?
+			OR category LIKE ?
+			OR brand LIKE ?
+			OR manufacturer LIKE ?
+		)
+	`
+
+	args = append(
+		args,
+		searchPattern,
+		searchPattern,
+		searchPattern,
+		searchPattern,
+		searchPattern,
+		searchPattern,
+	)
+
+	return query, args
+}

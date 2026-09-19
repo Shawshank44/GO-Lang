@@ -62,7 +62,11 @@ func RegisterAdmin(w http.ResponseWriter, r *http.Request) {
 		ID:     userID,
 	}
 
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetAdmins(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +102,11 @@ func GetAdmins(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -131,7 +139,11 @@ func GetAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func LoginAdmin(w http.ResponseWriter, r *http.Request) {
@@ -197,7 +209,11 @@ func LoginAdmin(w http.ResponseWriter, r *http.Request) {
 		Token:  tokenString,
 	}
 
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func LogoutAdmin(w http.ResponseWriter, r *http.Request) {
@@ -278,7 +294,11 @@ func UpdateAdminDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func ConfirmAdminDetails(w http.ResponseWriter, r *http.Request) {
@@ -332,7 +352,11 @@ func ConfirmAdminDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func DeactivateAdmin(w http.ResponseWriter, r *http.Request) {
@@ -373,7 +397,11 @@ func DeactivateAdmin(w http.ResponseWriter, r *http.Request) {
 		ID:     id,
 	}
 
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -433,7 +461,11 @@ func ForgotPasswordAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func ResetPasswordAdmin(w http.ResponseWriter, r *http.Request) {
@@ -469,5 +501,9 @@ func ResetPasswordAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }

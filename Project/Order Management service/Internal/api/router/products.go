@@ -21,9 +21,7 @@ func ProductRouter(MinioService *storage.MinioService) *http.ServeMux { // Minio
 
 	mux.HandleFunc("GET /getproduct/detail/{id}", handlers.GetProduct)
 
-	mux.HandleFunc("GET /getproduct/search", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to product search page")
-	})
+	mux.HandleFunc("GET /getproduct/search", handlers.SearchProducts)
 
 	// POST :
 	mux.HandleFunc("POST /admins/product/registery/create", handlers.CreateProduct)

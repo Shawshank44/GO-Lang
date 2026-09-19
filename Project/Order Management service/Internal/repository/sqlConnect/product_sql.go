@@ -70,9 +70,21 @@ func CreateProductInDB(ctx context.Context, product *models.Product, sessionID s
 	}
 
 	// 2. Finalize files :
-	_, err = tx.ExecContext(ctx, `UPDATE files SET session_id = NULL WHERE session_id = ?`, sessionID)
-	if err != nil {
-		return 0, utils.ErrorHandler(err, "Unable to finalize uploaded files")
+	if sessionID != "" {
+		baseURL := fmt.Sprintf("http://localhost%s/product-images/", os.Getenv("MINIO_PORT"))
+		for _, img := range product.Images {
+			if img.URL == "" {
+				continue
+			}
+			objName := strings.TrimPrefix(
+				img.URL,
+				baseURL,
+			)
+			_, err = tx.ExecContext(ctx, `UPDATE files SET session_id = NULL WHERE session_id = ? AND file_path = ?`, sessionID, objName)
+			if err != nil {
+				return 0, utils.ErrorHandler(err, "Unable to finalize uploaded file")
+			}
+		}
 	}
 
 	// 3. Delete files :
@@ -297,13 +309,17 @@ func UpdateProductInDB(ctx context.Context, minioService *storage.MinioService, 
 	}
 
 	if sessionID != "" {
-		_, err = tx.ExecContext(ctx, `UPDATE files SET session_id = NULL WHERE session_id = ?`, sessionID)
-		if err != nil {
-			return utils.ErrorHandler(err, "Unable to finalize uploaded files")
-		}
-		_, err = tx.ExecContext(ctx, `DELETE FROM upload_sessions WHERE id = ?`, sessionID)
-		if err != nil {
-			return utils.ErrorHandler(err, "Unable to delete upload session")
+		for _, img := range newImages {
+			if img.URL == "" {
+				continue
+			}
+
+			objName := strings.TrimPrefix(img.URL, fmt.Sprintf("http://localhost%s/product-images/", os.Getenv("MINIO_PORT")))
+
+			_, err = tx.ExecContext(ctx, `UPDATE files SET session_id = NULL WHERE session_id = ? AND file_path = ?`, sessionID, objName)
+			if err != nil {
+				return utils.ErrorHandler(err, "Unable to finalize uploaded file")
+			}
 		}
 	}
 
@@ -384,4 +400,95 @@ func InventoryUpdateInDB(ctx context.Context, inventory *models.Inventory, id in
 	}
 
 	return nil
+}
+
+func SearchProductsInDB(ctx context.Context, r *http.Request) ([]models.Product, error) {
+	db, err := ConnectDB()
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "Internal server error")
+	}
+	defer db.Close()
+
+	query := `
+		SELECT
+			id,
+			sku,
+			name,
+			description,
+			category,
+			brand,
+			manufacturer,
+			price,
+			currency,
+			stock,
+			unit,
+			status,
+			created_at,
+			spec_updated_at,
+			inventory_updated_at,
+			updated_by
+		FROM products
+		WHERE 1 = 1
+	`
+	var args []interface{}
+
+	// Search :
+	query, args = utils.AddSearch(r, query, args)
+
+	// Filters :
+	query, args = utils.AddFilters(r, query, args)
+
+	// Sorting :
+	query = utils.AddSorting(r, query)
+
+	// Pagination :
+	page, limit := utils.GetPaginationParams(r)
+
+	offset := (page - 1) * limit
+
+	query += " LIMIT ? OFFSET ?"
+
+	args = append(args, limit, offset)
+
+	rows, err := db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, utils.ErrorHandler(err, "failed to search products")
+	}
+
+	defer rows.Close()
+
+	products := make([]models.Product, 0)
+
+	for rows.Next() {
+		var product models.Product
+
+		err := rows.Scan(
+			&product.ID,
+			&product.SKU,
+			&product.Name,
+			&product.Description,
+			&product.Category,
+			&product.Brand,
+			&product.Manufacturer,
+			&product.Price,
+			&product.Currency,
+			&product.Stock,
+			&product.Unit,
+			&product.Status,
+			&product.CreatedAt,
+			&product.SpecsUpdatedAt,
+			&product.InventoryUpdatedAt,
+			&product.UpdatedBy,
+		)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "failed to scan product")
+		}
+		products = append(products, product)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, utils.ErrorHandler(err, "failed while reading search results")
+	}
+
+	return products, nil
 }

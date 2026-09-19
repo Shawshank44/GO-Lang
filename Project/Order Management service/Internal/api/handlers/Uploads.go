@@ -44,7 +44,11 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 		SessionID: sessionID,
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func UploadProductImage(minioService *storage.MinioService) http.HandlerFunc {
@@ -127,7 +131,10 @@ func UploadProductImage(minioService *storage.MinioService) http.HandlerFunc {
 			URL:     minioService.GetURL(ObjectName),
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(&res)
-
+		err = json.NewEncoder(w).Encode(&res)
+		if err != nil {
+			http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+			return
+		}
 	}
 }

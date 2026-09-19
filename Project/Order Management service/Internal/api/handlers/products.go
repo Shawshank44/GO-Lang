@@ -11,6 +11,7 @@ import (
 	"order_mgt/pkg/utils"
 	utilssql "order_mgt/pkg/utils_sql"
 	"strconv"
+	"strings"
 )
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,11 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetProducts(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +105,11 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetProduct(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +140,11 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
 
 func UpdateProduct(minioService *storage.MinioService) http.HandlerFunc {
@@ -189,7 +202,11 @@ func UpdateProduct(minioService *storage.MinioService) http.HandlerFunc {
 			Success: "Product updated successfully",
 			Product: product,
 		}
-		json.NewEncoder(w).Encode(&res)
+		err = json.NewEncoder(w).Encode(&res)
+		if err != nil {
+			http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -234,5 +251,56 @@ func UpdateInventory(w http.ResponseWriter, r *http.Request) {
 	}{
 		Success: fmt.Sprintf("Product %d inventory has been updated successfully", pid),
 	}
-	json.NewEncoder(w).Encode(&res)
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
+}
+
+func SearchProducts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	search := strings.TrimSpace(r.URL.Query().Get("q"))
+
+	if search == "" {
+		http.Error(w, "search query is required", http.StatusBadRequest)
+		return
+	}
+
+	if len(search) > 100 {
+		http.Error(w, "search query is too long", http.StatusBadRequest)
+		return
+	}
+
+	products, err := sqlconnect.SearchProductsInDB(r.Context(), r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	page, limit := utils.GetPaginationParams(r)
+
+	w.Header().Set("Content-Type", "application/json")
+	res := struct {
+		Query    string
+		Page     int
+		Limit    int
+		Count    int
+		Products []models.Product
+	}{
+		Query:    search,
+		Page:     page,
+		Limit:    limit,
+		Count:    len(products),
+		Products: products,
+	}
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, "failed to encode reponse", http.StatusInternalServerError)
+		return
+	}
 }
