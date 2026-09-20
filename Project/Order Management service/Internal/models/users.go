@@ -27,7 +27,6 @@ type UserResponse struct {
 	FirstName         string  `json:"first_name,omitempty" db:"first_name,omitempty"`
 	LastName          string  `json:"last_name,omitempty" db:"last_name,omitempty"`
 	Email             string  `json:"email,omitempty" db:"email,omitempty"`
-	Password          string  `json:"password,omitempty" db:"password,omitempty"`
 	UserCreatedAt     *string `json:"user_created_at,omitempty" db:"user_created_at,omitempty"`
 	PasswordChangedAt *string `json:"password_changed_at,omitempty" db:"password_changed_at,omitempty"`
 	InactiveStatus    bool    `json:"inactive_status,omitempty" db:"inactive_status,omitempty"`
