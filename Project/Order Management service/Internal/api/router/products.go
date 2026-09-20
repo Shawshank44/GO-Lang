@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"order_mgt/Internal/api/handlers"
 	"order_mgt/pkg/storage"
@@ -30,11 +29,6 @@ func ProductRouter(MinioService *storage.MinioService) *http.ServeMux { // Minio
 	mux.HandleFunc("PATCH /admins/product/registery/{id}/update", handlers.UpdateProduct(MinioService))
 
 	mux.HandleFunc("PATCH /admins/product/inventory/update/{id}", handlers.UpdateInventory)
-
-	// DELETE :
-	mux.HandleFunc("DELETE /admins/product/registery/delete", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to Products DELETE Page.")
-	})
 
 	return mux
 }
