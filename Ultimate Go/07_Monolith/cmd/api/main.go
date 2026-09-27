@@ -23,7 +23,7 @@ func main() {
 			Message string
 		}{
 			Success: true,
-			Message: "Okay",
+			Message: "Okay, API up and running",
 		}
 
 		err := json.NewEncoder(w).Encode(&res)
