@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -17,7 +18,18 @@ func main() {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status" : "okay"}`))
+		res := struct {
+			Success bool
+			Message string
+		}{
+			Success: true,
+			Message: "Okay",
+		}
+
+		err := json.NewEncoder(w).Encode(&res)
+		if err != nil {
+			log.Fatal("invalid payload")
+		}
 	})
 
 	srv := http.Server{
