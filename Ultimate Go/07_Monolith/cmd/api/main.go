@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/Shawshank44/olx-api/internal/config"
+	"github.com/Shawshank44/olx-api/internal/handlers"
 )
 
 func main() {
@@ -15,22 +15,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		res := struct {
-			Success bool
-			Message string
-		}{
-			Success: true,
-			Message: "Okay, API up and running",
-		}
-
-		err := json.NewEncoder(w).Encode(&res)
-		if err != nil {
-			log.Fatal("invalid payload")
-		}
-	})
+	mux.HandleFunc("GET /healthz", handlers.Health)
 
 	srv := http.Server{
 		Addr:         ":" + cfg.Port,
