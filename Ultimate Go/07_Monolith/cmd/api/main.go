@@ -6,12 +6,17 @@ import (
 	"time"
 
 	"github.com/Shawshank44/olx-api/internal/config"
+	"github.com/Shawshank44/olx-api/internal/db"
 	"github.com/Shawshank44/olx-api/internal/handlers"
 )
 
 func main() {
 
 	cfg := config.MustLoad()
+	_, err := db.Connect(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("main.db.connect : %v", err)
+	}
 
 	mux := http.NewServeMux()
 
@@ -26,7 +31,7 @@ func main() {
 	}
 
 	log.Println("Server running successfully.")
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("server failed : %v", err)
 	}
