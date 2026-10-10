@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/Shawshank44/olx-api/internal/middlewares"
 )
 
 type listing struct {
@@ -18,12 +21,14 @@ type listing struct {
 }
 
 type ListingHandler struct { // go constructor pattern
-	db *sql.DB
+	db     *sql.DB
+	logger *slog.Logger
 }
 
-func NewListingHandler(db *sql.DB) *ListingHandler {
+func NewListingHandler(db *sql.DB, logger *slog.Logger) *ListingHandler {
 	return &ListingHandler{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 }
 
@@ -32,6 +37,7 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := lh.db.QueryContext(ctx, `SELECT id, title, description, price, city, created_at FROM listings ORDER BY created_at DESC LIMIT 100`)
 	if err != nil {
+		lh.logger.Error("Listing query error", "Source", "List.db.QueryContext", "err", err)
 		log.Printf("GET - db.Query : %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -44,7 +50,7 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 		var l listing
 		err := rows.Scan(&l.ID, &l.Title, &l.Description, &l.Price, &l.City, &l.CreatedAt)
 		if err != nil {
-			log.Printf("GET - rows.Scan : %v", err)
+			lh.logger.Error("Listing rows scan error", "Source", "List.rows.Scan", "err", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
@@ -55,6 +61,7 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
+	lh.logger.Info("Listings fetched", "total", len(listings))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -80,9 +87,11 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 func (lh ListingHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	ctx := r.Context()
-	_, err := lh.db.ExecContext(ctx, `DELETE FROM listings WHERE id = $1`, id)
+	requestID := middlewares.RequestIDFromContext(ctx)
+	_, err := lh.db.ExecContext(ctx, `DELETE FROM listing WHERE id = $1`, id)
 	if err != nil {
-		log.Printf("DELETE - db.Exec : %v", err)
+		// log.Printf("DELETE - db.Exec : %v", err) // recommeded to use Slog package and mention the source "db.Exec"
+		lh.logger.Error("delete failed", "listing_id", id, "request_id", requestID, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
