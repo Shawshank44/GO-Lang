@@ -88,7 +88,7 @@ func (lh ListingHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	ctx := r.Context()
 	requestID := middlewares.RequestIDFromContext(ctx)
-	_, err := lh.db.ExecContext(ctx, `DELETE FROM listing WHERE id = $1`, id)
+	_, err := lh.db.ExecContext(ctx, `DELETE FROM listings WHERE id = $1`, id)
 	if err != nil {
 		// log.Printf("DELETE - db.Exec : %v", err) // recommeded to use Slog package and mention the source "db.Exec"
 		lh.logger.Error("delete failed", "listing_id", id, "request_id", requestID, "err", err)
