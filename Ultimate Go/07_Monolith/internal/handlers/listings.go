@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Shawshank44/olx-api/internal/httpx"
 	"github.com/Shawshank44/olx-api/internal/middlewares"
 )
 
@@ -15,7 +16,7 @@ type listing struct {
 	ID          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Price       string    `json:"price"`
+	Price       int64     `json:"price"`
 	City        string    `json:"city"`
 	CreatedAt   time.Time `json:"created_at"`
 }
@@ -39,7 +40,7 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		lh.logger.Error("Listing query error", "Source", "List.db.QueryContext", "err", err)
 		log.Printf("GET - db.Query : %v", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httpx.Error(w, http.StatusInternalServerError, "internal error", httpx.CodeInternalError)
 		return
 	}
 	defer rows.Close()
@@ -51,14 +52,14 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 		err := rows.Scan(&l.ID, &l.Title, &l.Description, &l.Price, &l.City, &l.CreatedAt)
 		if err != nil {
 			lh.logger.Error("Listing rows scan error", "Source", "List.rows.Scan", "err", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			httpx.Error(w, http.StatusInternalServerError, "internal error", httpx.CodeInternalError)
 			return
 		}
 		listings = append(listings, l)
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("GET - rows.Err : %v", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httpx.Error(w, http.StatusInternalServerError, "internal error", httpx.CodeInternalError)
 		return
 	}
 	lh.logger.Info("Listings fetched", "total", len(listings))
@@ -75,13 +76,44 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 		Listings: listings,
 	}
 
-	err = json.NewEncoder(w).Encode(&res)
+	_ = json.NewEncoder(w).Encode(&res)
+
+}
+
+func (lh ListingHandler) Create(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	requestID := middlewares.RequestIDFromContext(ctx)
+	var req listing
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		log.Printf("GET - json.NewEncoder : %v", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		lh.logger.Error("failed to decode", "request_id", requestID, "err", err)
+		httpx.Error(w, http.StatusBadRequest, "invalid body", httpx.CodeMalformedJSON)
 		return
 	}
 
+	row := lh.db.QueryRowContext(ctx, `INSERT INTO listings (title, description, price, city) VALUES ($1, $2, $3, $4) RETURNING id`, req.Title, req.Description, req.Price, req.City)
+	var id string
+	if err := row.Scan(&id); err != nil {
+		lh.logger.Error("failed to insert", "request_id", requestID, "err", err)
+		httpx.Error(w, http.StatusInternalServerError, "invalid body", httpx.CodeInternalError)
+		return
+	}
+
+	lh.logger.Info("listing created", "request_id", requestID, "listing_id", id)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	res := struct {
+		Success bool   `json:"success"`
+		Status  int    `json:"status"`
+		ListID  string `json:"list_id"`
+	}{
+		Success: true,
+		Status:  http.StatusOK,
+		ListID:  id,
+	}
+
+	_ = json.NewEncoder(w).Encode(&res)
 }
 
 func (lh ListingHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +124,7 @@ func (lh ListingHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// log.Printf("DELETE - db.Exec : %v", err) // recommeded to use Slog package and mention the source "db.Exec"
 		lh.logger.Error("delete failed", "listing_id", id, "request_id", requestID, "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httpx.Error(w, http.StatusInternalServerError, "something went wrong", httpx.CodeInternalError)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
