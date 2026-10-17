@@ -83,7 +83,7 @@ func (lh ListingHandler) List(w http.ResponseWriter, r *http.Request) {
 func (lh ListingHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	requestID := middlewares.RequestIDFromContext(ctx)
-	var req listing
+	var req CreateListingRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		lh.logger.Error("failed to decode", "request_id", requestID, "err", err)
@@ -91,26 +91,26 @@ func (lh ListingHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := lh.db.QueryRowContext(ctx, `INSERT INTO listings (title, description, price, city) VALUES ($1, $2, $3, $4) RETURNING id`, req.Title, req.Description, req.Price, req.City)
-	var id string
-	if err := row.Scan(&id); err != nil {
+	row := lh.db.QueryRowContext(ctx, `INSERT INTO listings (title, description, price, city) VALUES ($1, $2, $3, $4) RETURNING id, created_at`, req.Title, req.Description, req.Price, req.City)
+	var out CreateListingResponse
+	if err := row.Scan(&out.ID, &out.CreatedAt); err != nil {
 		lh.logger.Error("failed to insert", "request_id", requestID, "err", err)
 		httpx.Error(w, http.StatusInternalServerError, "invalid body", httpx.CodeInternalError)
 		return
 	}
 
-	lh.logger.Info("listing created", "request_id", requestID, "listing_id", id)
+	lh.logger.Info("listing created", "request_id", requestID, "listing_id", out.ID, "created_at", out.CreatedAt)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	res := struct {
-		Success bool   `json:"success"`
-		Status  int    `json:"status"`
-		ListID  string `json:"list_id"`
+		Success bool                  `json:"success"`
+		Status  int                   `json:"status"`
+		List    CreateListingResponse `json:"list"`
 	}{
 		Success: true,
 		Status:  http.StatusOK,
-		ListID:  id,
+		List:    out,
 	}
 
 	_ = json.NewEncoder(w).Encode(&res)
